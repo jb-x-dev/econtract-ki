@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eContract KI - Genehmigungen</title>
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>📋 eContract KI</h1>
+                <p class="subtitle">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+            </div>
+            <nav>
+                <a href="/econtract/dashboard.html">Dashboard</a>
+                <a href="/econtract/contracts.html">Verträge</a>
+                <a href="/econtract/ai-assistant.html">KI-Assistent</a>
+                <a href="/econtract/workflows.html" class="active">Genehmigungen</a>
+                <a href="/econtract/deadlines.html">Fristen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>✨ Genehmigungsworkflows</h2>
+            <p>Verwalten Sie mehrstufige Genehmigungsprozesse für Verträge</p>
+
+            <!-- Statistiken -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Offene Genehmigungen</h3>
+                    <div class="stat-number" id="pendingApprovals">0</div>
+                    <p class="stat-label">Warten auf meine Freigabe</p>
+                </div>
+                <div class="stat-card">
+                    <h3>In Bearbeitung</h3>
+                    <div class="stat-number" id="inProgressWorkflows">0</div>
+                    <p class="stat-label">Aktive Workflows</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Heute genehmigt</h3>
+                    <div class="stat-number" id="approvedToday">0</div>
+                    <p class="stat-label">Abgeschlossene Freigaben</p>
+                </div>
+                <div class="stat-card warning">
+                    <h3>Überfällig</h3>
+                    <div class="stat-number" id="overdueApprovals">0</div>
+                    <p class="stat-label">Frist überschritten</p>
+                </div>
+            </div>
+
+            <!-- Meine Genehmigungen -->
+            <div class="card">
+                <h3>📋 Meine offenen Genehmigungen</h3>
+                <div class="table-container">
+                    <table class="contracts-table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Wert</th>
+                                <th>Workflow-Schritt</th>
+                                <th>Frist</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myApprovalsTableBody">
+                            <tr><td colspan="7" class="loading">Lade Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Workflow-Timeline -->
+            <div class="card" id="workflowDetailCard" style="display:none;">
+                <h3>Workflow-Details</h3>
+                <div id="workflowTimeline" class="workflow-timeline"></div>
+            </div>
+
+            <!-- Alle Workflows -->
+            <div class="card">
+                <h3>🔄 Alle aktiven Workflows</h3>
+                
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Workflows durchsuchen..." 
+                               onkeypress="handleSearch(event)">
+                        <button class="btn btn-secondary" onclick="searchWorkflows()">🔍 Suchen</button>
+                    </div>
+                    
+                    <div class="filter-box">
+                        <select id="statusFilter" onchange="applyFilters()">
+                            <option value="">Alle Status</option>
+                            <option value="PENDING">Ausstehend</option>
+                            <option value="IN_PROGRESS">In Bearbeitung</option>
+                            <option value="APPROVED">Genehmigt</option>
+                            <option value="REJECTED">Abgelehnt</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="contracts-table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Gestartet</th>
+                                <th>Aktueller Schritt</th>
+                                <th>Status</th>
+                                <th>Fortschritt</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allWorkflowsTableBody">
+                            <tr><td colspan="7" class="loading">Lade Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 jb-x business solutions GmbH | eContract KI v1.0.0</p>
+        </div>
+    </footer>
+
+    <!-- Genehmigung Modal -->
+    <div id="approvalModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeApprovalModal()">&times;</span>
+            <h2>Vertrag genehmigen/ablehnen</h2>
+            
+            <div id="contractInfo"></div>
+            
+            <form id="approvalForm" onsubmit="submitApproval(event)">
+                <input type="hidden" id="approvalContractId">
+                <input type="hidden" id="approvalAction">
+                
+                <div class="form-group">
+                    <label>Kommentar</label>
+                    <textarea name="comment" rows="4" 
+                        placeholder="Ihr Kommentar zur Genehmigung/Ablehnung..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" 
+                            onclick="setApprovalAction('approve')">✅ Genehmigen</button>
+                    <button type="button" class="btn btn-danger" 
+                            onclick="setApprovalAction('reject')">❌ Ablehnen</button>
+                    <button type="button" class="btn btn-secondary" 
+                            onclick="closeApprovalModal()">Abbrechen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/econtract/js/workflows.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>
+

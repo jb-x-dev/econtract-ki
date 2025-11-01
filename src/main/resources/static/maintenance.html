@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>eContract KI - Vertragspflege</title>
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>📋 eContract KI</h1>
+                <p class="subtitle">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+            </div>
+            <nav>
+                <a href="/econtract/dashboard.html">Dashboard</a>
+                <a href="/econtract/contracts.html">Verträge</a>
+                <a href="/econtract/framework-contracts.html">Rahmenverträge</a>
+                <a href="/econtract/maintenance.html" class="active">Vertragspflege</a>
+                <a href="/econtract/calendar.html">Kalender</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <h2>🔧 Vertragspflege</h2>
+            <div class="stats-grid">
+                <div class="stat-card"><h3>Geplant</h3><div class="stat-number" id="scheduled">0</div></div>
+                <div class="stat-card"><h3>In Arbeit</h3><div class="stat-number" id="inProgress">0</div></div>
+                <div class="stat-card"><h3>Abgeschlossen</h3><div class="stat-number" id="completed">0</div></div>
+                <div class="stat-card warning"><h3>Überfällig</h3><div class="stat-number" id="overdue">0</div></div>
+            </div>
+            <div class="card">
+                <h3>📋 Wartungsaufgaben</h3>
+                <table class="contracts-table">
+                    <thead><tr><th>Aufgabe</th><th>Vertrag</th><th>Typ</th><th>Geplant</th><th>Status</th><th>Zugewiesen</th></tr></thead>
+                    <tbody id="tasksBody"><tr><td colspan="6" class="loading">Lade...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script>
+        const API = '/econtract/api/v1';
+        document.addEventListener('DOMContentLoaded', async () => {
+            const stats = await fetch(API + '/maintenance/stats').then(r => r.json());
+            document.getElementById('scheduled').textContent = stats.scheduled || 0;
+            document.getElementById('inProgress').textContent = stats.inProgress || 0;
+            document.getElementById('completed').textContent = stats.completed || 0;
+            document.getElementById('overdue').textContent = stats.overdue || 0;
+            
+            const tasks = await fetch(API + '/maintenance/tasks').then(r => r.json());
+            document.getElementById('tasksBody').innerHTML = tasks.map(t => `
+                <tr>
+                    <td>${t.title}</td>
+                    <td>${t.contractNumber}</td>
+                    <td>${t.maintenanceType}</td>
+                    <td>${t.scheduledDate}</td>
+                    <td><span class="badge">${t.status}</span></td>
+                    <td>${t.assignedTo}</td>
+                </tr>
+            `).join('');
+        });
+    </script>
+    <script src="js/navigation.js"></script>
+    <script src="js/unified-menu.js"></script>
+</body>
+</html>

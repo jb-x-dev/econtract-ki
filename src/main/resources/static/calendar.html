@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>eContract KI - Kalender</title>
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <style>
+        .calendar-container { display: grid; grid-template-columns: 250px 1fr; gap: 20px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #ddd; border: 1px solid #ddd; }
+        .calendar-day { background: white; padding: 10px; min-height: 100px; position: relative; }
+        .calendar-day-header { font-weight: bold; margin-bottom: 5px; }
+        .calendar-event-item { font-size: 0.8rem; padding: 2px 5px; margin: 2px 0; border-radius: 3px; cursor: pointer; }
+        .event-deadline { background: #fee; color: #c00; }
+        .event-renewal { background: #efe; color: #080; }
+        .event-review { background: #eef; color: #008; }
+        .sidebar { background: white; padding: 20px; border-radius: 8px; }
+    </style>
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>📋 eContract KI</h1>
+                <p class="subtitle">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+            </div>
+            <nav>
+                <a href="/econtract/dashboard.html">Dashboard</a>
+                <a href="/econtract/contracts.html">Verträge</a>
+                <a href="/econtract/framework-contracts.html">Rahmenverträge</a>
+                <a href="/econtract/maintenance.html">Vertragspflege</a>
+                <a href="/econtract/calendar.html" class="active">Kalender</a>
+            </nav>
+        </div>
+    </header>
+    <main>
+        <div class="container">
+            <h2>📅 Kalender</h2>
+            <div class="calendar-container">
+                <div class="sidebar">
+                    <h3 id="currentMonth">November 2025</h3>
+                    <button class="btn btn-primary" onclick="prevMonth()">← Vorheriger</button>
+                    <button class="btn btn-primary" onclick="nextMonth()">Nächster →</button>
+                    <hr>
+                    <h4>Legende</h4>
+                    <div class="calendar-event-item event-deadline">Frist</div>
+                    <div class="calendar-event-item event-renewal">Verlängerung</div>
+                    <div class="calendar-event-item event-review">Prüfung</div>
+                </div>
+                <div class="card">
+                    <div class="calendar-grid" id="calendarGrid">
+                        <div class="calendar-day"><div class="calendar-day-header">Mo</div></div>
+                        <div class="calendar-day"><div class="calendar-day-header">Di</div></div>
+                        <div class="calendar-day"><div class="calendar-day-header">Mi</div></div>
+                        <div class="calendar-day"><div class="calendar-day-header">Do</div></div>
+                        <div class="calendar-day"><div class="calendar-day-header">Fr</div></div>
+                        <div class="calendar-day"><div class="calendar-day-header">Sa</div></div>
+                        <div class="calendar-day"><div class="calendar-day-header">So</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        const API = '/econtract/api/v1';
+        let currentDate = new Date();
+        
+        async function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('currentMonth').textContent = 
+                new Date(year, month).toLocaleDateString('de-DE', {month: 'long', year: 'numeric'});
+            
+            const events = await fetch(`${API}/calendar/events/month?year=${year}&month=${month+1}`).then(r => r.json());
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let html = '<div class="calendar-day"><div class="calendar-day-header">Mo</div></div>'.repeat(7);
+            
+            for (let i = 0; i < (firstDay || 7) - 1; i++) html += '<div class="calendar-day"></div>';
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+                const dayEvents = (events.events || []).filter(e => e.eventDate === dateStr);
+                
+                html += `<div class="calendar-day">
+                    <div class="calendar-day-header">${day}</div>
+                    ${dayEvents.map(e => `<div class="calendar-event-item event-${e.eventType.toLowerCase()}">${e.title.substring(0,20)}</div>`).join('')}
+                </div>`;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = html;
+        }
+        
+        function prevMonth() { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }
+        function nextMonth() { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }
+        
+        document.addEventListener('DOMContentLoaded', renderCalendar);
+    </script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>

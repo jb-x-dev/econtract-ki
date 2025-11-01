@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verträge - eContract KI</title>
+    
+    <!-- Unified Menu CSS -->
+    <link rel="stylesheet" href="css/unified-menu.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/econtract/css/main.css">
+</head>
+<body>
+    <!-- Unified Sidebar -->
+    <aside id="unified-sidebar"></aside>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <!-- Content Header - Kompakt -->
+        <div class="content-header" style="padding: 15px 30px;">
+            <h1 style="font-size: 24px; margin: 0;">📝 Verträge</h1>
+        </div>
+
+        <!-- Page Content -->
+        <div class="container">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <button class="btn btn-primary" onclick="showCreateModal()">
+                    ➕ Neuer Vertrag
+                </button>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Verträge durchsuchen..." 
+                           onkeyup="handleSearch(event)">
+                    <button onclick="searchContracts()">🔍 Suchen</button>
+                </div>
+                <div class="filter-box">
+                    <select id="statusFilter" onchange="applyFilters()">
+                        <option value="">Alle Status</option>
+                        <option value="DRAFT">Entwurf</option>
+                        <option value="IN_NEGOTIATION">In Verhandlung</option>
+                        <option value="IN_APPROVAL">In Genehmigung</option>
+                        <option value="APPROVED">Genehmigt</option>
+                        <option value="ACTIVE">Aktiv</option>
+                        <option value="EXPIRED">Abgelaufen</option>
+                        <option value="TERMINATED">Beendet</option>
+                    </select>
+                    <select id="typeFilter" onchange="applyFilters()">
+                        <option value="">Alle Typen</option>
+                        <option value="SUPPLIER">Lieferantenvertrag</option>
+                        <option value="CUSTOMER">Kundenvertrag</option>
+                        <option value="SERVICE">Dienstleistungsvertrag</option>
+                        <option value="NDA">Geheimhaltungsvereinbarung</option>
+                        <option value="EMPLOYMENT">Arbeitsvertrag</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <h3>Gesamt</h3>
+                    <p class="stat-number" id="totalContracts">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Entwürfe</h3>
+                    <p class="stat-number" id="draftContracts">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>In Genehmigung</h3>
+                    <p class="stat-number" id="approvalContracts">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Aktiv</h3>
+                    <p class="stat-number" id="activeContracts">-</p>
+                </div>
+            </div>
+
+            <!-- Contracts Table -->
+            <div class="table-container">
+                <table class="contracts-table">
+                    <thead>
+                        <tr>
+                            <th>Vertragsnummer</th>
+                            <th>Titel</th>
+                            <th>Typ</th>
+                            <th>Status</th>
+                            <th>Partner</th>
+                            <th>Enddatum</th>
+                            <th>Wert</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contractsTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">Lade Verträge...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer style="margin-top: 50px; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
+            <p>© 2025 jb-x business solutions GmbH | eContract KI v4.2</p>
+        </footer>
+    </div>
+
+    <!-- Create Contract Modal -->
+    <div id="createModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateModal()">&times;</span>
+            <h2>Neuen Vertrag erstellen</h2>
+            <form id="createContractForm" onsubmit="createContract(event)">
+                <div class="form-group">
+                    <label>Titel *</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Vertragstyp *</label>
+                    <select name="contractType" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="SUPPLIER">Lieferantenvertrag</option>
+                        <option value="CUSTOMER">Kundenvertrag</option>
+                        <option value="SERVICE">Dienstleistungsvertrag</option>
+                        <option value="NDA">Geheimhaltungsvereinbarung</option>
+                        <option value="EMPLOYMENT">Arbeitsvertrag</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Vertragspartner *</label>
+                    <input type="text" name="partnerName" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Startdatum</label>
+                        <input type="date" name="startDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Enddatum</label>
+                        <input type="date" name="endDate">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Vertragswert</label>
+                        <input type="number" name="contractValue" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Währung</label>
+                        <select name="currency">
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Abteilung</label>
+                    <input type="text" name="department">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeCreateModal()">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Erstellen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="UnifiedMenu.toggleSidebar()" style="display: none;">☰</button>
+
+    <!-- Unified Menu JS -->
+    <script src="js/unified-menu.js"></script>
+    
+    <!-- Page Scripts -->
+    <script src="/econtract/js/contracts.js"></script>
+</body>
+</html>
+

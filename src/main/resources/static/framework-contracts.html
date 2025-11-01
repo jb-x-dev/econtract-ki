@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eContract KI - Rahmenverträge</title>
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>📋 eContract KI</h1>
+                <p class="subtitle">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+            </div>
+            <nav>
+                <a href="/econtract/dashboard.html">Dashboard</a>
+                <a href="/econtract/contracts.html">Verträge</a>
+                <a href="/econtract/framework-contracts.html" class="active">Rahmenverträge</a>
+                <a href="/econtract/maintenance.html">Vertragspflege</a>
+                <a href="/econtract/calendar.html">Kalender</a>
+                <a href="/econtract/ai-assistant.html">KI-Assistent</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h2>📑 Rahmenverträge</h2>
+                <button class="btn btn-primary" onclick="openFrameworkModal()">➕ Neuer Rahmenvertrag</button>
+            </div>
+            <p>Verwalten Sie Rahmenverträge mit zugeordneten Einzelverträgen</p>
+
+            <!-- Statistiken -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Gesamt</h3>
+                    <div class="stat-number" id="totalFrameworks">0</div>
+                    <p class="stat-label">Rahmenverträge</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Aktiv</h3>
+                    <div class="stat-number" id="activeFrameworks">0</div>
+                    <p class="stat-label">Laufende Rahmenverträge</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Gesamtvolumen</h3>
+                    <div class="stat-number" id="totalVolume">0 €</div>
+                    <p class="stat-label">Vereinbartes Volumen</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Einzelverträge</h3>
+                    <div class="stat-number" id="totalChildContracts">0</div>
+                    <p class="stat-label">Zugeordnete Verträge</p>
+                </div>
+            </div>
+
+            <!-- Rahmenverträge Liste -->
+            <div class="card">
+                <h3>📋 Alle Rahmenverträge</h3>
+                
+                <div class="toolbar">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Rahmenverträge durchsuchen..." 
+                               onkeypress="handleSearch(event)">
+                        <button class="btn btn-secondary" onclick="searchFrameworks()">🔍 Suchen</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="contracts-table">
+                        <thead>
+                            <tr>
+                                <th>Rahmenvertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Typ</th>
+                                <th>Gesamtvolumen</th>
+                                <th>Laufzeit</th>
+                                <th>Einzelverträge</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="frameworkTableBody">
+                            <tr><td colspan="9" class="loading">Lade Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 jb-x business solutions GmbH | eContract KI v1.0.0</p>
+        </div>
+    </footer>
+
+    <!-- Rahmenvertrag Modal -->
+    <div id="frameworkModal" class="modal" style="display:none;">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeFrameworkModal()">&times;</span>
+            <h2 id="modalTitle">Neuer Rahmenvertrag</h2>
+            
+            <form id="frameworkForm" onsubmit="saveFramework(event)">
+                <input type="hidden" id="frameworkId">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Titel *</label>
+                        <input type="text" name="title" required 
+                               placeholder="z.B. Rahmenvertrag IT-Dienstleistungen">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Partner *</label>
+                        <input type="text" name="partnerName" required 
+                               placeholder="z.B. ABC GmbH">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Vertragstyp *</label>
+                        <select name="contractType" required>
+                            <option value="">Bitte wählen...</option>
+                            <option value="SUPPLIER">Lieferant</option>
+                            <option value="CUSTOMER">Kunde</option>
+                            <option value="SERVICE">Dienstleistung</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Abteilung</label>
+                        <input type="text" name="department" placeholder="z.B. Einkauf">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Startdatum</label>
+                        <input type="date" name="startDate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Enddatum</label>
+                        <input type="date" name="endDate">
+                    </div>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Gesamtvolumen (EUR)</label>
+                        <input type="number" name="totalVolume" step="0.01" 
+                               placeholder="z.B. 1000000.00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Währung</label>
+                        <select name="currency">
+                            <option value="EUR">EUR</option>
+                            <option value="USD">USD</option>
+                            <option value="GBP">GBP</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Beschreibung</label>
+                    <textarea name="description" rows="4" 
+                        placeholder="Beschreibung des Rahmenvertrags..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">💾 Speichern</button>
+                    <button type="button" class="btn btn-secondary" 
+                            onclick="closeFrameworkModal()">Abbrechen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Einzelverträge Modal -->
+    <div id="childContractsModal" class="modal" style="display:none;">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeChildContractsModal()">&times;</span>
+            <h2>Einzelverträge</h2>
+            
+            <div id="frameworkInfo" class="contract-summary"></div>
+            
+            <div id="volumeUsage" class="volume-usage"></div>
+            
+            <h3>Zugeordnete Einzelverträge</h3>
+            <div class="table-container">
+                <table class="contracts-table">
+                    <thead>
+                        <tr>
+                            <th>Vertragsnummer</th>
+                            <th>Titel</th>
+                            <th>Wert</th>
+                            <th>Laufzeit</th>
+                            <th>Status</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="childContractsTableBody">
+                        <tr><td colspan="6" class="loading">Lade Daten...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-primary" onclick="addChildContract()">➕ Einzelvertrag zuordnen</button>
+                <button class="btn btn-secondary" onclick="closeChildContractsModal()">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/econtract/js/framework-contracts.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>
+

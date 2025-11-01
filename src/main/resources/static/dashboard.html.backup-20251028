@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eContract KI - Dashboard</title>
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="css/navigation.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>📋 eContract KI</h1>
+                <p class="subtitle">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+            </div>
+            <nav>
+                <a href="/econtract/dashboard.html" class="active">Dashboard</a>
+                <a href="/econtract/contracts.html">Verträge</a>
+                <a href="/econtract/ai-assistant.html">KI-Assistent</a>
+                <a href="/econtract/workflows.html">Genehmigungen</a>
+                <a href="/econtract/deadlines.html">Fristen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>Dashboard</h2>
+
+            <!-- Statistik-Karten -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Gesamt</h3>
+                    <div class="stat-number" id="totalContracts">0</div>
+                    <p class="stat-label">Verträge</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Entwürfe</h3>
+                    <div class="stat-number" id="draftContracts">0</div>
+                    <p class="stat-label">In Bearbeitung</p>
+                </div>
+                <div class="stat-card">
+                    <h3>In Genehmigung</h3>
+                    <div class="stat-number" id="approvalContracts">0</div>
+                    <p class="stat-label">Warten auf Freigabe</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Aktiv</h3>
+                    <div class="stat-number" id="activeContracts">0</div>
+                    <p class="stat-label">Laufende Verträge</p>
+                </div>
+                <div class="stat-card warning">
+                    <h3>Ablaufend</h3>
+                    <div class="stat-number" id="expiringContracts">0</div>
+                    <p class="stat-label">Nächste 30 Tage</p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Verträge nach Typ</h3>
+                    <canvas id="typeChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Verträge nach Status</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Ablaufende Verträge -->
+            <div class="card">
+                <h3>⚠️ Ablaufende Verträge (nächste 30 Tage)</h3>
+                <div class="table-container">
+                    <table class="contracts-table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Enddatum</th>
+                                <th>Verbleibende Tage</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expiringTableBody">
+                            <tr><td colspan="6" class="loading">Lade Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Schnellaktionen -->
+            <div class="quick-actions">
+                <h3>Schnellaktionen</h3>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="window.location.href='/econtract/contracts.html'">
+                        ➕ Neuer Vertrag
+                    </button>
+                    <button class="btn btn-primary" onclick="window.location.href='/econtract/ai-assistant.html'">
+                        🤖 KI-Assistent
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='/econtract/workflows.html'">
+                        ✨ Genehmigungen
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='/econtract/deadlines.html'">
+                        📅 Fristen verwalten
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 jb-x business solutions GmbH | eContract KI v1.0.0</p>
+        </div>
+    </footer>
+
+    <script src="/econtract/js/dashboard.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>
+

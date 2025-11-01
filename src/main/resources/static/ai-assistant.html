@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eContract KI - KI-Assistent</title>
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>📋 eContract KI</h1>
+                <p class="subtitle">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+            </div>
+            <nav>
+                <a href="/econtract/dashboard.html">Dashboard</a>
+                <a href="/econtract/contracts.html">Verträge</a>
+                <a href="/econtract/ai-assistant.html" class="active">KI-Assistent</a>
+                <a href="/econtract/workflows.html">Genehmigungen</a>
+                <a href="/econtract/deadlines.html">Fristen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>🤖 KI-Assistent</h2>
+            <p>Nutzen Sie künstliche Intelligenz für die Vertragserstellung und -analyse</p>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('generate')">Vertrag generieren</button>
+                <button class="tab-btn" onclick="switchTab('analyze')">Risiken analysieren</button>
+                <button class="tab-btn" onclick="switchTab('clauses')">Klauseln vorschlagen</button>
+            </div>
+
+            <!-- Tab: Vertrag generieren -->
+            <div id="generateTab" class="tab-content active">
+                <div class="card">
+                    <h3>Vertrag automatisch generieren</h3>
+                    <form id="generateForm" onsubmit="generateContract(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Vertragstyp *</label>
+                                <select name="contractType" required>
+                                    <option value="">Bitte wählen...</option>
+                                    <option value="SUPPLIER">Lieferantenvertrag</option>
+                                    <option value="CUSTOMER">Kundenvertrag</option>
+                                    <option value="SERVICE">Dienstleistungsvertrag</option>
+                                    <option value="NDA">Geheimhaltungsvereinbarung</option>
+                                    <option value="EMPLOYMENT">Arbeitsvertrag</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Vertragspartner *</label>
+                                <input type="text" name="partnerName" required placeholder="z.B. ABC GmbH">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Startdatum</label>
+                                <input type="date" name="startDate">
+                            </div>
+                            <div class="form-group">
+                                <label>Enddatum</label>
+                                <input type="date" name="endDate">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Vertragswert (EUR)</label>
+                                <input type="number" name="contractValue" step="0.01" placeholder="z.B. 50000">
+                            </div>
+                            <div class="form-group">
+                                <label>Abteilung</label>
+                                <input type="text" name="department" placeholder="z.B. Einkauf">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Zusätzliche Anforderungen</label>
+                            <textarea name="additionalRequirements" rows="3" 
+                                placeholder="z.B. Besondere Kündigungsfristen, spezielle Klauseln..."></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">🤖 Mit KI generieren</button>
+                        </div>
+                    </form>
+
+                    <div id="generateResult" class="result-box" style="display:none;">
+                        <h4>Generierter Vertrag:</h4>
+                        <div id="generatedContract" class="contract-preview"></div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" onclick="saveGeneratedContract()">💾 Als Vertrag speichern</button>
+                            <button class="btn btn-secondary" onclick="copyToClipboard()">📋 Kopieren</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Risiken analysieren -->
+            <div id="analyzeTab" class="tab-content">
+                <div class="card">
+                    <h3>Vertragsrisiken analysieren</h3>
+                    <form id="analyzeForm" onsubmit="analyzeContract(event)">
+                        <div class="form-group">
+                            <label>Vertragstext *</label>
+                            <textarea name="contractText" rows="15" required 
+                                placeholder="Fügen Sie hier den Vertragstext ein..."></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">🔍 Risiken analysieren</button>
+                        </div>
+                    </form>
+
+                    <div id="analyzeResult" class="result-box" style="display:none;">
+                        <h4>Risikoanalyse:</h4>
+                        <div id="riskAnalysis"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Klauseln vorschlagen -->
+            <div id="clausesTab" class="tab-content">
+                <div class="card">
+                    <h3>Klauseln vorschlagen lassen</h3>
+                    <form id="clausesForm" onsubmit="suggestClauses(event)">
+                        <div class="form-group">
+                            <label>Vertragstyp *</label>
+                            <select name="contractType" required>
+                                <option value="">Bitte wählen...</option>
+                                <option value="SUPPLIER">Lieferantenvertrag</option>
+                                <option value="CUSTOMER">Kundenvertrag</option>
+                                <option value="SERVICE">Dienstleistungsvertrag</option>
+                                <option value="NDA">Geheimhaltungsvereinbarung</option>
+                                <option value="EMPLOYMENT">Arbeitsvertrag</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Kontext (optional)</label>
+                            <textarea name="context" rows="3" 
+                                placeholder="z.B. Internationale Lieferung, hoher Vertragswert..."></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">💡 Klauseln vorschlagen</button>
+                        </div>
+                    </form>
+
+                    <div id="clausesResult" class="result-box" style="display:none;">
+                        <h4>Vorgeschlagene Klauseln:</h4>
+                        <ul id="clausesList" class="clauses-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 jb-x business solutions GmbH | eContract KI v1.0.0</p>
+        </div>
+    </footer>
+
+    <script src="/econtract/js/ai-assistant.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>
+

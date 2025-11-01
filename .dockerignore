@@ -1,0 +1,24 @@
+_docker-compose.yml
+docker-compose.yml
+Dockerfile
+.dockerignore
+.env
+.env.example
+.git
+.gitignore
+.idea
+.mvn
+logs
+*.log
+*.iml
+target
+.DS_Store
+README.md
+CONTRIBUTING.md
+HELP.md
+node_modules
+src/main/resources/static/node_modules
+
+# Allow target/econtract-ki.war
+!target/econtract-ki.war
+

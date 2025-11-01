@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertrag bearbeiten - eContract KI</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/navigation.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <span class="logo-icon">📄</span>
+                <h1>eContract KI</h1>
+            </div>
+            <p class="subtitle">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <div class="container">
+            <a href="contracts.html">← Zurück zur Übersicht</a>
+            <a href="dashboard.html">Dashboard</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="page-header">
+            <h2 id="pageTitle">Vertrag bearbeiten</h2>
+            <div class="actions">
+                <button class="btn btn-secondary" onclick="window.location.href='contracts.html'">Abbrechen</button>
+                <button class="btn btn-primary" onclick="saveContract()">💾 Speichern</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('basic')">Vertragsdaten</button>
+            <button class="tab-btn" onclick="switchTab('costs')">Vertragskosten</button>
+            <button class="tab-btn" onclick="switchTab('contacts')">Ansprechpartner</button>
+            <button class="tab-btn" onclick="switchTab('attachments')">Anhänge</button>
+            <button class="tab-btn" onclick="switchTab('participants')">Beteiligte</button>
+        </div>
+
+        <!-- Tab: Vertragsdaten -->
+        <div id="tab-basic" class="tab-content active">
+            <div class="card">
+                <h3>Grunddaten</h3>
+                <form id="contractForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contractNumber">Vertragsnummer *</label>
+                            <input type="text" id="contractNumber" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="title">Titel *</label>
+                            <input type="text" id="title" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contractType">Vertragsart *</label>
+                            <select id="contractType" required>
+                                <option value="">-- Bitte wählen --</option>
+                                <option value="SUPPLIER">Lieferantenvertrag</option>
+                                <option value="CUSTOMER">Kundenvertrag</option>
+                                <option value="SERVICE">Dienstleistungsvertrag</option>
+                                <option value="NDA">Geheimhaltungsvereinbarung</option>
+                                <option value="EMPLOYMENT">Arbeitsvertrag</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="status">Status</label>
+                            <select id="status">
+                                <option value="DRAFT">Entwurf</option>
+                                <option value="IN_NEGOTIATION">In Verhandlung</option>
+                                <option value="IN_APPROVAL">In Genehmigung</option>
+                                <option value="APPROVED">Genehmigt</option>
+                                <option value="ACTIVE">Aktiv</option>
+                                <option value="EXPIRED">Abgelaufen</option>
+                                <option value="TERMINATED">Beendet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="partner">Vertragspartner *</label>
+                            <input type="text" id="partner" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="department">Abteilung</label>
+                            <input type="text" id="department">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Startdatum *</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">Enddatum *</label>
+                            <input type="date" id="endDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contractValue">Vertragswert (EUR)</label>
+                            <input type="number" id="contractValue" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label for="cancellationPeriod">Kündigungsfrist (Tage)</label>
+                            <input type="number" id="cancellationPeriod">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="autoRenewal">
+                            Automatische Verlängerung
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Beschreibung</label>
+                        <textarea id="description" rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab: Vertragskosten -->
+        <div id="tab-costs" class="tab-content">
+            <div class="card">
+                <h3>Kostendetails</h3>
+                <div class="form-group">
+                    <label for="costType">Kostentyp</label>
+                    <select id="costType">
+                        <option value="">-- Bitte wählen --</option>
+                        <option value="MONTHLY">Monatlich</option>
+                        <option value="QUARTERLY">Quartalsweise</option>
+                        <option value="YEARLY">Jährlich</option>
+                        <option value="ONE_TIME">Einmalig</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="amountGross">Betrag brutto (EUR)</label>
+                        <input type="number" id="amountGross" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="amountNet">Betrag netto (EUR)</label>
+                        <input type="number" id="amountNet" step="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="paymentTerms">Zahlungsbedingungen</label>
+                    <textarea id="paymentTerms" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Ansprechpartner -->
+        <div id="tab-contacts" class="tab-content">
+            <div class="card">
+                <h3>Ansprechpartner</h3>
+                <button class="btn btn-secondary" onclick="addContact()">+ Ansprechpartner hinzufügen</button>
+                <div id="contactsList" class="mt-3">
+                    <p class="text-muted">Keine Ansprechpartner hinterlegt</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Anhänge -->
+        <div id="tab-attachments" class="tab-content">
+            <div class="card">
+                <h3>Dokumente & Anhänge</h3>
+                <div class="upload-area">
+                    <input type="file" id="fileInput" multiple style="display:none" onchange="handleFileUpload()">
+                    <button class="btn btn-secondary" onclick="document.getElementById('fileInput').click()">
+                        📎 Dateien hochladen
+                    </button>
+                </div>
+                <div id="filesList" class="mt-3">
+                    <p class="text-muted">Keine Dateien hochgeladen</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Beteiligte -->
+        <div id="tab-participants" class="tab-content">
+            <div class="card">
+                <h3>Beteiligte</h3>
+                <button class="btn btn-secondary" onclick="addParticipant()">+ Beteiligten hinzufügen</button>
+                <div id="participantsList" class="mt-3">
+                    <p class="text-muted">Keine Beteiligten hinterlegt</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 jb-x business solutions GmbH | eContract KI v1.0.0</p>
+        </div>
+    </footer>
+
+    <script>
+        let contractId = null;
+        let isViewMode = false;
+
+        // URL-Parameter auslesen
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            contractId = urlParams.get('id');
+            isViewMode = urlParams.get('mode') === 'view';
+
+            if (contractId) {
+                loadContract(contractId);
+                document.getElementById('pageTitle').textContent = isViewMode ? 'Vertrag ansehen' : 'Vertrag bearbeiten';
+            } else {
+                document.getElementById('pageTitle').textContent = 'Neuer Vertrag';
+            }
+
+            if (isViewMode) {
+                disableAllInputs();
+            }
+        });
+
+        // Vertrag laden
+        async function loadContract(id) {
+            try {
+                const response = await fetch(`/econtract/api/v1/contracts/${id}`);
+                if (!response.ok) throw new Error('Vertrag nicht gefunden');
+                
+                const contract = await response.json();
+                fillForm(contract);
+            } catch (error) {
+                console.error('Fehler beim Laden:', error);
+                alert('Fehler beim Laden des Vertrags');
+            }
+        }
+
+        // Formular füllen
+        function fillForm(contract) {
+            document.getElementById('contractNumber').value = contract.contractNumber || '';
+            document.getElementById('title').value = contract.title || '';
+            document.getElementById('contractType').value = contract.contractType || '';
+            document.getElementById('status').value = contract.status || 'DRAFT';
+            document.getElementById('partner').value = contract.partner || '';
+            document.getElementById('department').value = contract.department || '';
+            document.getElementById('startDate').value = contract.startDate || '';
+            document.getElementById('endDate').value = contract.endDate || '';
+            document.getElementById('contractValue').value = contract.contractValue || '';
+            document.getElementById('cancellationPeriod').value = contract.cancellationPeriod || '';
+            document.getElementById('autoRenewal').checked = contract.autoRenewal || false;
+            document.getElementById('description').value = contract.description || '';
+        }
+
+        // Vertrag speichern
+        async function saveContract() {
+            const contract = {
+                contractNumber: document.getElementById('contractNumber').value,
+                title: document.getElementById('title').value,
+                contractType: document.getElementById('contractType').value,
+                status: document.getElementById('status').value,
+                partner: document.getElementById('partner').value,
+                department: document.getElementById('department').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                contractValue: parseFloat(document.getElementById('contractValue').value) || 0,
+                cancellationPeriod: parseInt(document.getElementById('cancellationPeriod').value) || 0,
+                autoRenewal: document.getElementById('autoRenewal').checked,
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const url = contractId 
+                    ? `/econtract/api/v1/contracts/${contractId}`
+                    : '/econtract/api/v1/contracts';
+                
+                const method = contractId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(contract)
+                });
+
+                if (!response.ok) throw new Error('Fehler beim Speichern');
+
+                alert('Vertrag erfolgreich gespeichert!');
+                window.location.href = 'contracts.html';
+            } catch (error) {
+                console.error('Fehler beim Speichern:', error);
+                alert('Fehler beim Speichern des Vertrags');
+            }
+        }
+
+        // Tab-Wechsel
+        function switchTab(tabName) {
+            // Alle Tabs deaktivieren
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            // Aktiven Tab aktivieren
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // Alle Inputs deaktivieren (View-Modus)
+        function disableAllInputs() {
+            document.querySelectorAll('input, select, textarea, button').forEach(el => {
+                if (el.textContent !== 'Abbrechen' && el.textContent !== '← Zurück zur Übersicht') {
+                    el.disabled = true;
+                }
+            });
+        }
+
+        // Platzhalter-Funktionen
+        function addContact() {
+            alert('Ansprechpartner-Funktion wird noch implementiert');
+        }
+
+        function addParticipant() {
+            alert('Beteiligte-Funktion wird noch implementiert');
+        }
+
+        function handleFileUpload() {
+            const files = document.getElementById('fileInput').files;
+            alert(`${files.length} Datei(en) ausgewählt. Upload-Funktion wird noch implementiert.`);
+        }
+    </script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>
+

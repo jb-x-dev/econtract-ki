@@ -1,0 +1,418 @@
+/**
+ * eContract KI - Unified Menu Styles
+ * Version: 4.2
+ * 
+ * Zentrales, einheitliches Menü-Styling
+ */
+
+/* ========== Layout ========== */
+body {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Verstecke altes Menü wenn Unified Menu aktiv ist */
+body:has(#unified-sidebar) header,
+body:has(#unified-sidebar) .main-navigation,
+body:has(#unified-sidebar) nav.main-nav:not(.sidebar-nav) {
+    display: none !important;
+}
+
+/* Minimiere blauen Header-Bereich */
+body:has(#unified-sidebar) .breadcrumbs,
+body:has(#unified-sidebar) .page-breadcrumbs,
+body:has(#unified-sidebar) .quick-actions-bar,
+body:has(#unified-sidebar) .action-bar,
+body:has(#unified-sidebar) .page-actions {
+    display: none !important;
+}
+
+#unified-sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+#main-content {
+    flex: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+}
+
+/* ========== Sidebar Header ========== */
+.sidebar-header {
+    padding: 20px;
+    background: rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.sidebar-logo-icon {
+    font-size: 32px;
+}
+
+.sidebar-logo-text {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background 0.3s;
+    display: none; /* Nur auf Mobile sichtbar */
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+/* ========== Search ========== */
+.sidebar-search {
+    padding: 15px 20px;
+    position: relative;
+}
+
+.sidebar-search-input {
+    width: 100%;
+    padding: 10px 35px 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.sidebar-search-input::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+.sidebar-search-input:focus {
+    outline: none;
+    background: rgba(255,255,255,0.25);
+}
+
+.search-icon {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+/* ========== Navigation ========== */
+.sidebar-nav {
+    flex: 1;
+    padding: 10px 0;
+    overflow-y: auto;
+}
+
+.sidebar-item {
+    margin: 2px 10px;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s;
+    position: relative;
+}
+
+.sidebar-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.sidebar-item.active > .sidebar-link {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-weight: 600;
+}
+
+.sidebar-icon {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+}
+
+.sidebar-title {
+    flex: 1;
+    font-size: 15px;
+}
+
+.sidebar-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.sidebar-badge-ki {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.sidebar-badge-neu {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.submenu-arrow {
+    font-size: 12px;
+    transition: transform 0.3s;
+}
+
+/* ========== Submenu ========== */
+.sidebar-submenu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: rgba(0,0,0,0.15);
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+.sidebar-submenu.open {
+    max-height: 500px;
+    padding: 5px 0;
+}
+
+.sidebar-sublink {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px 10px 50px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    border-radius: 6px;
+    margin: 2px 10px;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.sidebar-sublink:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.sidebar-sublink.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    font-weight: 600;
+}
+
+.sidebar-subicon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-subtitle {
+    flex: 1;
+}
+
+/* ========== Footer ========== */
+.sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.2);
+}
+
+.sidebar-version {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 10px;
+}
+
+/* ========== Scrollbar ========== */
+.sidebar-nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
+}
+
+/* ========== Mobile/Responsive ========== */
+@media (max-width: 768px) {
+    #unified-sidebar {
+        transform: translateX(-280px);
+    }
+
+    #unified-sidebar.open {
+        transform: translateX(0);
+    }
+
+    #main-content {
+        margin-left: 0;
+    }
+
+    .sidebar-toggle {
+        display: block;
+    }
+
+    /* Mobile Toggle Button */
+    .mobile-menu-toggle {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 999;
+        background: #1e3c72;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+}
+
+/* ========== Collapsed State (Desktop) ========== */
+#unified-sidebar.collapsed {
+    width: 70px;
+}
+
+#unified-sidebar.collapsed .sidebar-logo-text,
+#unified-sidebar.collapsed .sidebar-title,
+#unified-sidebar.collapsed .sidebar-subtitle,
+#unified-sidebar.collapsed .sidebar-badge,
+#unified-sidebar.collapsed .submenu-arrow,
+#unified-sidebar.collapsed .sidebar-search-input,
+#unified-sidebar.collapsed .search-icon {
+    display: none;
+}
+
+#unified-sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding: 12px;
+}
+
+#unified-sidebar.collapsed .sidebar-icon {
+    font-size: 24px;
+}
+
+body.sidebar-collapsed #main-content {
+    margin-left: 70px;
+}
+
+/* ========== Content Header ========== */
+.content-header {
+    background: white;
+    padding: 20px 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.content-header h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #1e3c72;
+}
+
+.content-header p {
+    margin: 5px 0 0 0;
+    color: #666;
+}
+
+/* ========== Main Content Area ========== */
+.container {
+    padding: 30px;
+}
+
+/* ========== Animations ========== */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.sidebar-item {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.sidebar-item:nth-child(1) { animation-delay: 0.05s; }
+.sidebar-item:nth-child(2) { animation-delay: 0.1s; }
+.sidebar-item:nth-child(3) { animation-delay: 0.15s; }
+.sidebar-item:nth-child(4) { animation-delay: 0.2s; }
+.sidebar-item:nth-child(5) { animation-delay: 0.25s; }
+.sidebar-item:nth-child(6) { animation-delay: 0.3s; }
+.sidebar-item:nth-child(7) { animation-delay: 0.35s; }
+.sidebar-item:nth-child(8) { animation-delay: 0.4s; }
+.sidebar-item:nth-child(9) { animation-delay: 0.45s; }
+.sidebar-item:nth-child(10) { animation-delay: 0.5s; }
+.sidebar-item:nth-child(11) { animation-delay: 0.55s; }
+
+
+
+/* ========== WICHTIG: Blende navigation.js Banner aus ========== */
+/* Das blaue Banner mit Breadcrumbs und Quick Actions wird von navigation.js erstellt */
+/* Wir blenden es komplett aus, wenn unified-sidebar aktiv ist */
+
+#unified-sidebar ~ #main-content > *:first-child:not(.content-header):not(.container) {
+    display: none !important;
+}
+
+/* Alternative: Blende alle Elemente vor dem ersten .container aus */
+#main-content > *:not(.content-header):not(.container):not(footer) {
+    display: none !important;
+}
+
+/* Spezifisch: Blende Elemente mit blauem Hintergrund aus */
+#main-content > div[style*="background"] {
+    display: none !important;
+}
+

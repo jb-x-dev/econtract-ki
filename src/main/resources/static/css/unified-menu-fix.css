@@ -1,0 +1,130 @@
+/**
+ * eContract KI - Unified Menu Fix
+ * Version: 5.0.2
+ * 
+ * Fix für unsichtbare Menütexte
+ */
+
+/* ===== SIDEBAR STRUCTURE (from unified-menu.js) ===== */
+.sidebar-link,
+.sidebar-sublink {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem 0.875rem !important;
+    font-size: 0.9375rem !important;
+    font-weight: 500 !important;
+    color: #4b5563 !important;
+    text-decoration: none !important;
+    border-radius: 0.5rem !important;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: pointer !important;
+}
+
+.sidebar-link:hover,
+.sidebar-sublink:hover {
+    background: #f3f4f6 !important;
+    color: #111827 !important;
+    transform: translateX(2px) !important;
+}
+
+.sidebar-link.active,
+.sidebar-sublink.active {
+    background: #eff6ff !important;
+    color: #2563eb !important;
+    font-weight: 600 !important;
+}
+
+/* ===== TEXT VISIBILITY ===== */
+.sidebar-title,
+.sidebar-subtitle {
+    display: inline-block !important;
+    flex: 1 !important;
+    font-size: 0.9375rem !important;
+    line-height: 1.4 !important;
+    color: inherit !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+.sidebar-icon,
+.sidebar-subicon {
+    display: inline-block !important;
+    font-size: 1.25rem !important;
+    line-height: 1 !important;
+    flex-shrink: 0 !important;
+    width: 1.5rem !important;
+    text-align: center !important;
+}
+
+/* ===== BADGES ===== */
+.sidebar-badge {
+    display: inline-block !important;
+    padding: 0.125rem 0.5rem !important;
+    font-size: 0.6875rem !important;
+    font-weight: 600 !important;
+    border-radius: 9999px !important;
+    letter-spacing: 0.025em !important;
+    text-transform: uppercase !important;
+}
+
+.sidebar-badge-ki {
+    background: #dbeafe !important;
+    color: #1e40af !important;
+}
+
+.sidebar-badge-new {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+}
+
+/* ===== SUBMENU ARROW ===== */
+.submenu-arrow {
+    display: inline-block !important;
+    font-size: 0.875rem !important;
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    color: #9ca3af !important;
+    margin-left: auto !important;
+}
+
+/* ===== SUBMENU ===== */
+.sidebar-submenu {
+    max-height: 0 !important;
+    overflow: hidden !important;
+    transition: max-height 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    padding-left: 2.5rem !important;
+}
+
+.sidebar-submenu.open {
+    max-height: 500px !important;
+}
+
+.sidebar-sublink {
+    padding: 0.625rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    margin: 0.25rem 0 !important;
+}
+
+.sidebar-sublink:hover {
+    padding-left: 0.875rem !important;
+}
+
+/* ===== SIDEBAR ITEM ===== */
+.sidebar-item {
+    margin: 0 0.625rem 0.375rem !important;
+}
+
+/* ===== SIDEBAR NAV ===== */
+.sidebar-nav {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 0.75rem 0 !important;
+}
+
+/* ===== ENSURE VISIBILITY ===== */
+#unified-sidebar * {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+

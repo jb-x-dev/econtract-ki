@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertragsberichte - eContract KI</title>
+    
+    <!-- Minimal Theme CSS -->
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside id="unified-sidebar">
+        <div class="sidebar-header">
+            <a href="dashboard-minimal.html" class="sidebar-logo">
+                <span class="sidebar-logo-icon">📄</span>
+                <span>eContract KI</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-search">
+            <input type="text" placeholder="Suche..." id="menuSearch">
+        </div>
+        
+        <nav class="sidebar-menu">
+            <div class="menu-item">
+                <a href="dashboard-minimal.html" class="menu-item-link active">
+                    <span class="menu-item-icon">📊</span>
+                    <span class="menu-item-text">Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="menu-item">
+                <div class="menu-item-link" onclick="toggleSubmenu(this)">
+                    <span class="menu-item-icon">📝</span>
+                    <span class="menu-item-text">Verträge</span>
+                    <span class="menu-item-arrow">▼</span>
+                </div>
+                <div class="submenu">
+                    <div class="submenu-item">
+                        <a href="contracts.html" class="submenu-item-link">
+                            <span class="submenu-item-icon">📋</span>
+                            <span>Alle Verträge</span>
+                        </a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="contract-edit.html" class="submenu-item-link">
+                            <span class="submenu-item-icon">➕</span>
+                            <span>Neuer Vertrag</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-item">
+                <div class="menu-item-link" onclick="toggleSubmenu(this)">
+                    <span class="menu-item-icon">📥</span>
+                    <span class="menu-item-text">Import & OCR</span>
+                    <span class="menu-item-badge">KI</span>
+                    <span class="menu-item-arrow">▼</span>
+                </div>
+                <div class="submenu">
+                    <div class="submenu-item">
+                        <a href="contract-import.html" class="submenu-item-link">
+                            <span class="submenu-item-icon">📤</span>
+                            <span>Vertragsimport</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-item">
+                <div class="menu-item-link" onclick="toggleSubmenu(this)">
+                    <span class="menu-item-icon">🤖</span>
+                    <span class="menu-item-text">KI-Assistent</span>
+                    <span class="menu-item-badge">KI</span>
+                    <span class="menu-item-arrow">▼</span>
+                </div>
+                <div class="submenu">
+                    <div class="submenu-item">
+                        <a href="ai-assistant.html" class="submenu-item-link">
+                            <span class="submenu-item-icon">💬</span>
+                            <span>KI-Assistent</span>
+                        </a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="contract-analysis.html" class="submenu-item-link">
+                            <span class="submenu-item-icon">📊</span>
+                            <span>Vertragsanalyse</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-item">
+                <a href="workflows.html" class="menu-item-link">
+                    <span class="menu-item-icon">✅</span>
+                    <span class="menu-item-text">Genehmigungen</span>
+                </a>
+            </div>
+            
+            <div class="menu-item">
+                <a href="deadlines.html" class="menu-item-link">
+                    <span class="menu-item-icon">⏰</span>
+                    <span class="menu-item-text">Fristen</span>
+                </a>
+            </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            Version 5.0 | © 2025 jb-x
+        </div>
+    </aside>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <!-- Content Header -->
+        <div class="content-header">
+            <h1>Dashboard</h1>
+            <p class="content-header-subtitle">Übersicht über alle Verträge und Aktivitäten</p>
+        </div>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Verträge Gesamt</div>
+                    <div class="stat-value" id="totalContracts">-</div>
+                    <div class="stat-change positive">↑ 12% vs. letzter Monat</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Aktive Verträge</div>
+                    <div class="stat-value text-success" id="activeContracts">-</div>
+                    <div class="stat-change positive">↑ 8% vs. letzter Monat</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">In Genehmigung</div>
+                    <div class="stat-value text-warning" id="pendingContracts">-</div>
+                    <div class="stat-change">→ Unverändert</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Gesamtwert</div>
+                    <div class="stat-value text-primary" id="totalValue">-</div>
+                    <div class="stat-change positive">↑ 15% vs. letzter Monat</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Verträge nach Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Verträge nach Typ</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="typeChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Contracts -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Aktuelle Verträge</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Status</th>
+                                <th>Wert</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractsTable">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #9ca3af;">Lade Daten...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Menu Toggle Functions
+        function toggleSubmenu(element) {
+            const submenu = element.nextElementSibling;
+            const isExpanded = element.classList.contains('expanded');
+            
+            // Close all other submenus
+            document.querySelectorAll('.menu-item-link.expanded').forEach(item => {
+                if (item !== element) {
+                    item.classList.remove('expanded');
+                    item.nextElementSibling.classList.remove('expanded');
+                }
+            });
+            
+            // Toggle current submenu
+            element.classList.toggle('expanded');
+            submenu.classList.toggle('expanded');
+        }
+        
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('unified-sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        }
+        
+        // Search Functionality
+        document.getElementById('menuSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const menuItems = document.querySelectorAll('.menu-item, .submenu-item');
+            
+            menuItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+        
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/econtract/api/v1/contracts');
+                const contracts = await response.json();
+                
+                // Update Stats
+                document.getElementById('totalContracts').textContent = contracts.length;
+                document.getElementById('activeContracts').textContent = 
+                    contracts.filter(c => c.status === 'ACTIVE').length;
+                document.getElementById('pendingContracts').textContent = 
+                    contracts.filter(c => c.status === 'IN_APPROVAL').length;
+                
+                const totalValue = contracts.reduce((sum, c) => 
+                    sum + (c.contractValue || 0), 0);
+                document.getElementById('totalValue').textContent = 
+                    new Intl.NumberFormat('de-DE', { 
+                        style: 'currency', 
+                        currency: 'EUR',
+                        maximumFractionDigits: 0
+                    }).format(totalValue);
+                
+                // Create Charts
+                createStatusChart(contracts);
+                createTypeChart(contracts);
+                
+                // Populate Table
+                populateContractsTable(contracts.slice(0, 5));
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        function createStatusChart(contracts) {
+            const statusCounts = {};
+            contracts.forEach(c => {
+                statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+            });
+            
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts),
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+        
+        function createTypeChart(contracts) {
+            const typeCounts = {};
+            contracts.forEach(c => {
+                typeCounts[c.contractType] = (typeCounts[c.contractType] || 0) + 1;
+            });
+            
+            const ctx = document.getElementById('typeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(typeCounts),
+                    datasets: [{
+                        label: 'Anzahl',
+                        data: Object.values(typeCounts),
+                        backgroundColor: '#2563eb',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+        
+        function populateContractsTable(contracts) {
+            const tbody = document.getElementById('contractsTable');
+            
+            if (contracts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #9ca3af;">Keine Verträge gefunden</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = contracts.map(contract => `
+                <tr>
+                    <td><strong>${contract.contractNumber}</strong></td>
+                    <td>${contract.title}</td>
+                    <td>${contract.partnerName || '-'}</td>
+                    <td><span class="badge badge-${getStatusBadgeClass(contract.status)}">${contract.status}</span></td>
+                    <td>${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(contract.contractValue || 0)}</td>
+                    <td>
+                        <a href="contract-edit.html?id=${contract.id}" class="btn btn-sm btn-outline">Bearbeiten</a>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function getStatusBadgeClass(status) {
+            const classes = {
+                'DRAFT': 'secondary',
+                'IN_APPROVAL': 'warning',
+                'APPROVED': 'success',
+                'ACTIVE': 'primary',
+                'EXPIRED': 'danger'
+            };
+            return classes[status] || 'secondary';
+        }
+        
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
+</body>
+</html>
+

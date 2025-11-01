@@ -1,0 +1,43 @@
+services:
+  # Web Service - Spring Boot Application
+  - type: web
+    name: econtract-ki
+    runtime: docker
+    region: frankfurt
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /econtract/
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: econtract-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: econtract-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: econtract-db
+          property: password
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      - key: SPRING_JPA_SHOW_SQL
+        value: false
+      - key: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
+        value: org.hibernate.dialect.MySQL8Dialect
+      - key: FLYWAY_ENABLED
+        value: true
+      - key: FLYWAY_BASELINE_ON_MIGRATE
+        value: true
+    autoDeploy: true
+
+databases:
+  - name: econtract-db
+    databaseName: econtract
+    user: econtract_user
+    plan: free
+    region: frankfurt

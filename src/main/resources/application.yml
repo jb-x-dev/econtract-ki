@@ -1,0 +1,145 @@
+spring:
+  application:
+    name: econtract-ki
+  
+  # Datenbank-Konfiguration
+  datasource:
+    url: jdbc:mysql://localhost:3306/econtract_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:econtract_user}
+    password: ${DB_PASSWORD:econtract_pass}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  
+  # JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # Flyway Migration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    validate-on-migrate: true
+  
+  # Servlet/Multipart
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  # Jackson
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: Europe/Berlin
+
+# Server
+server:
+  port: 8080
+  servlet:
+    context-path: /econtract
+  compression:
+    enabled: true
+  error:
+    include-message: always
+
+# Apache Solr
+solr:
+  url: ${SOLR_URL:http://localhost:8983/solr}
+  core: econtract
+  connection-timeout: 5000
+  socket-timeout: 10000
+
+# OpenAI API
+openai:
+  api:
+    key: ${OPENAI_API_KEY:}
+    url: https://api.openai.com/v1
+    model: gpt-4
+    temperature: 0.3
+    max-tokens: 2000
+
+# JWT Security
+jwt:
+  secret: ${JWT_SECRET:econtract-ki-secret-key-change-in-production-2025}
+  expiration: 86400000 # 24 hours in milliseconds
+  refresh-expiration: 604800000 # 7 days
+
+# File Storage
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:/var/econtract/uploads}
+  max-size: 10485760 # 10MB in bytes
+  allowed-extensions: pdf,doc,docx,txt,jpg,jpeg,png
+
+# Application Settings
+app:
+  name: eContract KI
+  version: 1.0.0
+  admin-email: admin@jb-x.com
+  
+  # Notification Settings
+  notifications:
+    enabled: true
+    email-enabled: false
+    deadline-reminder-days: 30,14,7,1
+  
+  # Workflow Settings
+  workflow:
+    default-approval-timeout-days: 7
+    escalation-enabled: true
+    escalation-after-days: 3
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.jbx.econtract: DEBUG
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: /var/log/econtract/application.log
+    max-size: 10MB
+    max-history: 30
+
+# Swagger/OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+  show-actuator: false
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR-Erkennung - eContract KI</title>
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+    <link rel="stylesheet" href="css/navigation.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 OCR-Dokumentenerkennung</h1>
+        <p class="subtitle">Intelligente Texterkennung aus Bildern und gescannten Dokumenten</p>
+
+        <!-- Upload-Bereich -->
+        <div class="card">
+            <h2>📤 Dokument hochladen</h2>
+            
+            <div class="upload-zone" id="ocrUploadZone" ondrop="handleOCRDrop(event)" ondragover="event.preventDefault()">
+                <div class="upload-icon">📄</div>
+                <h3>Dokument hier ablegen</h3>
+                <p>oder klicken zum Auswählen</p>
+                <p class="upload-hint">Unterstützt: JPG, PNG, PDF, TIFF</p>
+                <input type="file" id="ocrFileInput" accept=".jpg,.jpeg,.png,.pdf,.tiff,.tif" multiple style="display: none;" onchange="handleOCRFiles(this.files)">
+                <button class="btn btn-primary" onclick="document.getElementById('ocrFileInput').click()">
+                    📁 Dateien auswählen
+                </button>
+            </div>
+        </div>
+
+        <!-- OCR-Optionen -->
+        <div class="card">
+            <h2>⚙️ OCR-Einstellungen</h2>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Sprache</label>
+                    <select id="ocrLanguage" class="form-control">
+                        <option value="deu">Deutsch</option>
+                        <option value="eng">Englisch</option>
+                        <option value="auto">Automatisch erkennen</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Qualität</label>
+                    <select id="ocrQuality" class="form-control">
+                        <option value="fast">Schnell</option>
+                        <option value="balanced" selected>Ausgewogen</option>
+                        <option value="accurate">Genau</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Dokumenttyp</label>
+                    <select id="ocrDocType" class="form-control">
+                        <option value="contract">Vertrag</option>
+                        <option value="invoice">Rechnung</option>
+                        <option value="letter">Brief</option>
+                        <option value="form">Formular</option>
+                        <option value="other">Sonstiges</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="ocrAutoRotate" checked>
+                        Automatische Rotation
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="ocrDeskew" checked>
+                        Schräglage korrigieren
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="ocrEnhance" checked>
+                        Bildverbesserung
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verarbeitungs-Status -->
+        <div class="card" id="ocrProcessingCard" style="display: none;">
+            <h2>⚡ Verarbeitung läuft...</h2>
+            
+            <div class="processing-list" id="ocrProcessingList">
+                <!-- Dynamisch gefüllt -->
+            </div>
+        </div>
+
+        <!-- Ergebnisse -->
+        <div class="card" id="ocrResultsCard" style="display: none;">
+            <h2>✅ OCR-Ergebnisse</h2>
+            
+            <div class="results-tabs">
+                <button class="tab-btn active" onclick="switchOCRTab('text')">📝 Text</button>
+                <button class="tab-btn" onclick="switchOCRTab('preview')">👁️ Vorschau</button>
+                <button class="tab-btn" onclick="switchOCRTab('data')">📊 Extrahierte Daten</button>
+                <button class="tab-btn" onclick="switchOCRTab('confidence')">📈 Konfidenz</button>
+            </div>
+            
+            <div class="tab-content">
+                <!-- Text-Tab -->
+                <div id="ocrTextTab" class="tab-pane active">
+                    <div class="text-result">
+                        <div class="result-header">
+                            <h3>Erkannter Text</h3>
+                            <div class="result-actions">
+                                <button class="btn btn-sm" onclick="copyOCRText()">📋 Kopieren</button>
+                                <button class="btn btn-sm" onclick="downloadOCRText()">💾 Speichern</button>
+                                <button class="btn btn-sm" onclick="editOCRText()">✏️ Bearbeiten</button>
+                            </div>
+                        </div>
+                        <textarea id="ocrTextResult" class="form-control" rows="20" style="font-family: monospace;"></textarea>
+                    </div>
+                </div>
+                
+                <!-- Vorschau-Tab -->
+                <div id="ocrPreviewTab" class="tab-pane">
+                    <div class="preview-container">
+                        <div class="preview-original">
+                            <h4>Original</h4>
+                            <img id="ocrOriginalImage" src="" alt="Original" style="max-width: 100%; border: 1px solid #ddd;">
+                        </div>
+                        <div class="preview-processed">
+                            <h4>Verarbeitet</h4>
+                            <img id="ocrProcessedImage" src="" alt="Verarbeitet" style="max-width: 100%; border: 1px solid #ddd;">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Daten-Tab -->
+                <div id="ocrDataTab" class="tab-pane">
+                    <div class="extracted-data">
+                        <h3>🤖 KI-extrahierte Vertragsdaten</h3>
+                        <div id="ocrExtractedData">
+                            <!-- Dynamisch gefüllt -->
+                        </div>
+                        <button class="btn btn-primary" onclick="createContractFromOCR()">
+                            ➕ Vertrag erstellen
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Konfidenz-Tab -->
+                <div id="ocrConfidenceTab" class="tab-pane">
+                    <div class="confidence-stats">
+                        <h3>📊 Erkennungsqualität</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-label">Durchschnitt</div>
+                                <div class="stat-value" id="ocrAvgConfidence">-</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Wörter</div>
+                                <div class="stat-value" id="ocrWordCount">-</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Zeichen</div>
+                                <div class="stat-value" id="ocrCharCount">-</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-label">Dauer</div>
+                                <div class="stat-value" id="ocrDuration">-</div>
+                            </div>
+                        </div>
+                        <canvas id="ocrConfidenceChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historie -->
+        <div class="card">
+            <h2>📚 OCR-Historie</h2>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Datei</th>
+                        <th>Typ</th>
+                        <th>Konfidenz</th>
+                        <th>Status</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="ocrHistoryTable">
+                    <tr>
+                        <td colspan="6" class="text-center">Keine OCR-Historie vorhanden</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/navigation.js"></script>
+    <script>
+        // OCR-Upload Handler
+        function handleOCRDrop(event) {
+            event.preventDefault();
+            const files = event.dataTransfer.files;
+            handleOCRFiles(files);
+        }
+
+        function handleOCRFiles(files) {
+            if (files.length === 0) return;
+            
+            document.getElementById('ocrProcessingCard').style.display = 'block';
+            const processingList = document.getElementById('ocrProcessingList');
+            processingList.innerHTML = '';
+            
+            Array.from(files).forEach((file, index) => {
+                const item = document.createElement('div');
+                item.className = 'processing-item';
+                item.innerHTML = `
+                    <div class="processing-file">
+                        <span class="file-icon">📄</span>
+                        <span class="file-name">${file.name}</span>
+                        <span class="file-size">${(file.size / 1024).toFixed(2)} KB</span>
+                    </div>
+                    <div class="processing-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-${index}" style="width: 0%"></div>
+                        </div>
+                        <span class="progress-text" id="status-${index}">Warte...</span>
+                    </div>
+                `;
+                processingList.appendChild(item);
+                
+                // Simuliere OCR-Verarbeitung
+                setTimeout(() => processOCRFile(file, index), index * 500);
+            });
+        }
+
+        function processOCRFile(file, index) {
+            const progressBar = document.getElementById(`progress-${index}`);
+            const statusText = document.getElementById(`status-${index}`);
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 100) progress = 100;
+                
+                progressBar.style.width = progress + '%';
+                
+                if (progress < 30) {
+                    statusText.textContent = 'Bild wird analysiert...';
+                } else if (progress < 60) {
+                    statusText.textContent = 'Text wird erkannt...';
+                } else if (progress < 90) {
+                    statusText.textContent = 'Daten werden extrahiert...';
+                } else {
+                    statusText.textContent = 'Abgeschlossen ✓';
+                    clearInterval(interval);
+                    
+                    // Zeige Ergebnisse nach letzter Datei
+                    if (index === document.querySelectorAll('.processing-item').length - 1) {
+                        setTimeout(showOCRResults, 500);
+                    }
+                }
+            }, 200);
+        }
+
+        function showOCRResults() {
+            document.getElementById('ocrResultsCard').style.display = 'block';
+            
+            // Demo-Text
+            const demoText = `LIEFERVERTRAG
+
+zwischen
+
+ABC GmbH
+Musterstraße 123
+12345 Musterstadt
+
+- nachfolgend "Lieferant" genannt -
+
+und
+
+XYZ AG
+Beispielweg 456
+67890 Beispielstadt
+
+- nachfolgend "Kunde" genannt -
+
+§ 1 Vertragsgegenstand
+Der Lieferant verpflichtet sich zur Lieferung von Waren gemäß Anlage 1.
+
+§ 2 Vertragslaufzeit
+Dieser Vertrag beginnt am 01.01.2025 und endet am 31.12.2025.
+
+§ 3 Vergütung
+Die Vergütung beträgt 150.000 EUR netto.`;
+
+            document.getElementById('ocrTextResult').value = demoText;
+            
+            // Extrahierte Daten
+            const extractedData = {
+                'Vertragstyp': 'Liefervertrag',
+                'Vertragspartner': 'ABC GmbH',
+                'Startdatum': '01.01.2025',
+                'Enddatum': '31.12.2025',
+                'Vertragswert': '150.000 EUR',
+                'Abteilung': 'Einkauf'
+            };
+            
+            const dataHTML = Object.entries(extractedData).map(([key, value]) => `
+                <div class="data-row">
+                    <span class="data-label">${key}:</span>
+                    <span class="data-value">${value}</span>
+                </div>
+            `).join('');
+            
+            document.getElementById('ocrExtractedData').innerHTML = dataHTML;
+            
+            // Statistiken
+            document.getElementById('ocrAvgConfidence').textContent = '94.2%';
+            document.getElementById('ocrWordCount').textContent = '87';
+            document.getElementById('ocrCharCount').textContent = '542';
+            document.getElementById('ocrDuration').textContent = '2.3s';
+        }
+
+        function switchOCRTab(tab) {
+            // Tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Panes
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            document.getElementById(`ocr${tab.charAt(0).toUpperCase() + tab.slice(1)}Tab`).classList.add('active');
+        }
+
+        function copyOCRText() {
+            const text = document.getElementById('ocrTextResult').value;
+            navigator.clipboard.writeText(text);
+            alert('Text in Zwischenablage kopiert!');
+        }
+
+        function downloadOCRText() {
+            const text = document.getElementById('ocrTextResult').value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ocr-result.txt';
+            a.click();
+        }
+
+        function editOCRText() {
+            document.getElementById('ocrTextResult').readOnly = false;
+            document.getElementById('ocrTextResult').focus();
+        }
+
+        function createContractFromOCR() {
+            alert('Vertrag wird erstellt...');
+            window.location = 'contract-edit.html?mode=new&source=ocr';
+        }
+    </script>
+    <script src="js/unified-menu.js"></script>
+</body>
+</html>
+

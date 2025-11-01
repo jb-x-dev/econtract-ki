@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eContract KI - Fristen</title>
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <link rel="stylesheet" href="css/navigation.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>📋 eContract KI</h1>
+                <p class="subtitle">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+            </div>
+            <nav>
+                <a href="/econtract/dashboard.html">Dashboard</a>
+                <a href="/econtract/contracts.html">Verträge</a>
+                <a href="/econtract/ai-assistant.html">KI-Assistent</a>
+                <a href="/econtract/workflows.html">Genehmigungen</a>
+                <a href="/econtract/deadlines.html" class="active">Fristen</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <h2>📅 Fristen-Management</h2>
+            <p>Überwachen Sie Vertragsfristen und Kündigungstermine</p>
+
+            <!-- Statistiken -->
+            <div class="stats-grid">
+                <div class="stat-card warning">
+                    <h3>Kritisch</h3>
+                    <div class="stat-number" id="criticalDeadlines">0</div>
+                    <p class="stat-label">≤ 7 Tage</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Bald fällig</h3>
+                    <div class="stat-number" id="upcomingDeadlines">0</div>
+                    <p class="stat-label">8-30 Tage</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Kündigungsfrist</h3>
+                    <div class="stat-number" id="cancellationDeadlines">0</div>
+                    <p class="stat-label">Aktive Fristen</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Verlängerungen</h3>
+                    <div class="stat-number" id="renewalDeadlines">0</div>
+                    <p class="stat-label">Anstehend</p>
+                </div>
+            </div>
+
+            <!-- Filter -->
+            <div class="card">
+                <h3>🔍 Fristen filtern</h3>
+                <div class="filter-grid">
+                    <div class="form-group">
+                        <label>Zeitraum</label>
+                        <select id="timeRangeFilter" onchange="applyFilters()">
+                            <option value="7">Nächste 7 Tage</option>
+                            <option value="14">Nächste 14 Tage</option>
+                            <option value="30" selected>Nächste 30 Tage</option>
+                            <option value="60">Nächste 60 Tage</option>
+                            <option value="90">Nächste 90 Tage</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Vertragstyp</label>
+                        <select id="typeFilter" onchange="applyFilters()">
+                            <option value="">Alle Typen</option>
+                            <option value="SUPPLIER">Lieferant</option>
+                            <option value="CUSTOMER">Kunde</option>
+                            <option value="SERVICE">Dienstleistung</option>
+                            <option value="NDA">NDA</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Abteilung</label>
+                        <select id="departmentFilter" onchange="applyFilters()">
+                            <option value="">Alle Abteilungen</option>
+                            <option value="Einkauf">Einkauf</option>
+                            <option value="Vertrieb">Vertrieb</option>
+                            <option value="IT">IT</option>
+                            <option value="Personal">Personal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button class="btn btn-secondary" onclick="resetFilters()">Filter zurücksetzen</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kritische Fristen -->
+            <div class="card">
+                <h3>⚠️ Kritische Fristen (≤ 7 Tage)</h3>
+                <div class="table-container">
+                    <table class="contracts-table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Enddatum</th>
+                                <th>Verbleibend</th>
+                                <th>Kündigungsfrist</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="criticalTableBody">
+                            <tr><td colspan="8" class="loading">Lade Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Alle Fristen -->
+            <div class="card">
+                <h3>📋 Alle anstehenden Fristen</h3>
+                <div class="table-container">
+                    <table class="contracts-table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Typ</th>
+                                <th>Enddatum</th>
+                                <th>Verbleibend</th>
+                                <th>Kündigungsfrist</th>
+                                <th>Abteilung</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allDeadlinesTableBody">
+                            <tr><td colspan="9" class="loading">Lade Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kalenderansicht -->
+            <div class="card">
+                <h3>📆 Kalenderansicht</h3>
+                <div id="calendarView" class="calendar-view">
+                    <p class="text-muted">Kalenderansicht wird geladen...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 jb-x business solutions GmbH | eContract KI v1.0.0</p>
+        </div>
+    </footer>
+
+    <!-- Frist-Aktion Modal -->
+    <div id="deadlineActionModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeadlineModal()">&times;</span>
+            <h2>Frist-Aktion</h2>
+            
+            <div id="deadlineContractInfo"></div>
+            
+            <form id="deadlineActionForm" onsubmit="submitDeadlineAction(event)">
+                <input type="hidden" id="deadlineContractId">
+                
+                <div class="form-group">
+                    <label>Aktion *</label>
+                    <select name="action" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="RENEW">Vertrag verlängern</option>
+                        <option value="CANCEL">Vertrag kündigen</option>
+                        <option value="RENEGOTIATE">Neu verhandeln</option>
+                        <option value="REMIND">Erinnerung setzen</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Neues Enddatum (bei Verlängerung)</label>
+                    <input type="date" name="newEndDate">
+                </div>
+                
+                <div class="form-group">
+                    <label>Notiz</label>
+                    <textarea name="note" rows="4" 
+                        placeholder="Zusätzliche Informationen..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">💾 Speichern</button>
+                    <button type="button" class="btn btn-secondary" 
+                            onclick="closeDeadlineModal()">Abbrechen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/econtract/js/deadlines.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>
+

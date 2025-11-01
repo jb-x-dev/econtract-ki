@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - eContract KI</title>
+    
+    <!-- Unified Menu CSS -->
+    <link rel="stylesheet" href="css/unified-menu.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Unified Sidebar -->
+    <aside id="unified-sidebar"></aside>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <!-- Content Header - Kompakt -->
+        <div class="content-header" style="padding: 15px 30px;">
+            <h1 style="font-size: 24px; margin: 0;">📊 Dashboard</h1>
+        </div>
+
+        <!-- Page Content -->
+        <div class="container">
+            <!-- Statistik-Karten -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Gesamt</h3>
+                    <div class="stat-number" id="totalContracts">0</div>
+                    <p class="stat-label">Verträge</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Entwürfe</h3>
+                    <div class="stat-number" id="draftContracts">0</div>
+                    <p class="stat-label">In Bearbeitung</p>
+                </div>
+                <div class="stat-card">
+                    <h3>In Genehmigung</h3>
+                    <div class="stat-number" id="approvalContracts">0</div>
+                    <p class="stat-label">Warten auf Freigabe</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Aktiv</h3>
+                    <div class="stat-number" id="activeContracts">0</div>
+                    <p class="stat-label">Laufende Verträge</p>
+                </div>
+                <div class="stat-card warning">
+                    <h3>Ablaufend</h3>
+                    <div class="stat-number" id="expiringContracts">0</div>
+                    <p class="stat-label">Nächste 30 Tage</p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Verträge nach Typ</h3>
+                    <canvas id="typeChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3>Verträge nach Status</h3>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Ablaufende Verträge -->
+            <div class="card">
+                <h3>⚠️ Ablaufende Verträge (nächste 30 Tage)</h3>
+                <div class="table-container">
+                    <table class="contracts-table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Enddatum</th>
+                                <th>Verbleibende Tage</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expiringTableBody">
+                            <tr><td colspan="6" class="loading">Lade Daten...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Footer -->
+        <footer style="margin-top: 50px; padding: 20px; text-align: center; border-top: 1px solid #ddd;">
+            <p>© 2025 jb-x business solutions GmbH | eContract KI v4.2</p>
+        </footer>
+    </div>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="UnifiedMenu.toggleSidebar()" style="display: none;">☰</button>
+
+    <!-- Unified Menu JS -->
+    <script src="js/unified-menu.js"></script>
+    
+    <!-- Page Scripts -->
+    <script src="/econtract/js/dashboard.js"></script>
+</body>
+</html>
+

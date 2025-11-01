@@ -1,0 +1,502 @@
+/**
+ * eContract KI - Navigation Styles
+ * Version 2.1
+ */
+
+/* ===== Hauptnavigation ===== */
+.main-navigation {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+    color: white;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-navigation.collapsed {
+    width: 70px;
+}
+
+.main-navigation.collapsed .nav-title,
+.main-navigation.collapsed .logo-text,
+.main-navigation.collapsed .nav-search-input,
+.main-navigation.collapsed .nav-section-title,
+.main-navigation.collapsed .user-details,
+.main-navigation.collapsed .nav-arrow,
+.main-navigation.collapsed .nav-badge {
+    display: none;
+}
+
+.main-navigation.collapsed .nav-submenu {
+    display: none !important;
+}
+
+/* ===== Header ===== */
+.nav-header {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.logo-icon {
+    font-size: 28px;
+}
+
+.nav-toggle {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.nav-toggle:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.hamburger {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: white;
+    position: relative;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 2px;
+    background: white;
+    left: 0;
+}
+
+.hamburger::before {
+    top: -6px;
+}
+
+.hamburger::after {
+    bottom: -6px;
+}
+
+/* ===== Suche ===== */
+.nav-search {
+    padding: 15px 20px;
+    position: relative;
+}
+
+.nav-search-input {
+    width: 100%;
+    padding: 10px 35px 10px 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.nav-search-input::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+.nav-search-input:focus {
+    outline: none;
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.4);
+}
+
+.search-icon {
+    position: absolute;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    opacity: 0.7;
+}
+
+/* ===== Menü-Sections ===== */
+.nav-sections {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.nav-section {
+    margin-bottom: 20px;
+}
+
+.nav-section-title {
+    padding: 10px 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.6;
+}
+
+/* ===== Menü-Items ===== */
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: white;
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.nav-link:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.nav-item.active > .nav-link {
+    background: rgba(255,255,255,0.15);
+    border-left: 3px solid #fbbf24;
+}
+
+.nav-icon {
+    font-size: 20px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.nav-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nav-badge {
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    line-height: 1;
+}
+
+.nav-arrow {
+    font-size: 10px;
+    transition: transform 0.2s;
+}
+
+.nav-item.submenu-open .nav-arrow {
+    transform: rotate(180deg);
+}
+
+/* ===== Submenu ===== */
+.nav-submenu {
+    display: none;
+    background: rgba(0,0,0,0.2);
+    padding: 5px 0;
+}
+
+.nav-item.submenu-open .nav-submenu {
+    display: block;
+}
+
+.nav-submenu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px 10px 56px;
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.nav-submenu-item:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.nav-badge-sm {
+    background: #10b981;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 8px;
+}
+
+/* ===== User Section ===== */
+.nav-section-user {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 10px;
+}
+
+/* ===== Footer ===== */
+.nav-footer {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 15px;
+}
+
+.nav-user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.user-role {
+    font-size: 11px;
+    opacity: 0.7;
+}
+
+/* ===== Breadcrumbs ===== */
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 15px 0;
+    margin-bottom: 20px;
+    font-size: 14px;
+    flex-wrap: wrap;
+}
+
+.breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.2s;
+    text-transform: capitalize;
+}
+
+.breadcrumb-item:hover {
+    color: #1e40af;
+}
+
+.breadcrumb-item.active {
+    color: #1e40af;
+    font-weight: 600;
+}
+
+.breadcrumb-icon {
+    font-size: 16px;
+}
+
+.breadcrumb-separator {
+    color: #cbd5e1;
+    user-select: none;
+}
+
+/* ===== Quick Actions ===== */
+.quick-actions {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.quick-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.quick-action-icon {
+    font-size: 18px;
+}
+
+/* ===== Content-Anpassung ===== */
+body {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+}
+
+body.nav-collapsed {
+    margin-left: 70px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+    .main-navigation {
+        transform: translateX(-100%);
+    }
+    
+    .main-navigation.open {
+        transform: translateX(0);
+    }
+    
+    body {
+        margin-left: 0;
+    }
+    
+    .nav-toggle {
+        display: flex;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-navigation {
+        width: 100%;
+    }
+    
+    .quick-actions {
+        flex-wrap: wrap;
+    }
+    
+    .quick-action-label {
+        display: none;
+    }
+    
+    .breadcrumbs {
+        font-size: 12px;
+    }
+}
+
+/* ===== Scrollbar ===== */
+.main-navigation::-webkit-scrollbar {
+    width: 6px;
+}
+
+.main-navigation::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.1);
+}
+
+.main-navigation::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+.main-navigation::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.4);
+}
+
+/* ===== Animationen ===== */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.nav-item {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.nav-item:nth-child(1) { animation-delay: 0.05s; }
+.nav-item:nth-child(2) { animation-delay: 0.1s; }
+.nav-item:nth-child(3) { animation-delay: 0.15s; }
+.nav-item:nth-child(4) { animation-delay: 0.2s; }
+.nav-item:nth-child(5) { animation-delay: 0.25s; }
+.nav-item:nth-child(6) { animation-delay: 0.3s; }
+.nav-item:nth-child(7) { animation-delay: 0.35s; }
+.nav-item:nth-child(8) { animation-delay: 0.4s; }
+.nav-item:nth-child(9) { animation-delay: 0.45s; }
+.nav-item:nth-child(10) { animation-delay: 0.5s; }
+
+/* ===== Hover-Effekte ===== */
+.nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #fbbf24;
+    transform: scaleY(0);
+    transition: transform 0.2s;
+}
+
+.nav-link:hover::before {
+    transform: scaleY(1);
+}
+
+/* ===== Tooltips für collapsed state ===== */
+.main-navigation.collapsed .nav-link {
+    position: relative;
+}
+
+.main-navigation.collapsed .nav-link:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1f2937;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-size: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 1001;
+}
+

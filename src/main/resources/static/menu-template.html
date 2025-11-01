@@ -1,0 +1,77 @@
+<!-- Hauptmenü für alle Seiten -->
+<header>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>📄 eContract KI</h1>
+                <p style="margin: 0; color: #e3f2fd;">Intelligente Vertragsverwaltung für jb-x eBusiness Suite</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <div class="container">
+        <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+        <a href="contracts.html" class="nav-item">📝 Verträge</a>
+        <a href="contract-import.html" class="nav-item">📥 Import</a>
+        <a href="framework-contracts.html" class="nav-item">📑 Rahmenverträge</a>
+        <a href="workflows.html" class="nav-item">✅ Genehmigungen</a>
+        <a href="deadlines.html" class="nav-item">⏰ Fristen</a>
+        <a href="calendar.html" class="nav-item">📅 Kalender</a>
+        <a href="maintenance.html" class="nav-item">🔧 Pflege</a>
+        <a href="ai-assistant.html" class="nav-item">🤖 KI-Assistent</a>
+        <a href="/econtract/swagger-ui.html" class="nav-item" target="_blank">📚 API</a>
+    </div>
+</nav>
+
+<style>
+.main-nav {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.main-nav .container {
+    display: flex;
+    gap: 0;
+    padding: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.main-nav .nav-item {
+    color: white;
+    text-decoration: none;
+    padding: 15px 20px;
+    display: inline-block;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    font-weight: 500;
+}
+
+.main-nav .nav-item:hover {
+    background: rgba(255,255,255,0.1);
+    border-bottom-color: #ffd54f;
+}
+
+.main-nav .nav-item.active {
+    background: rgba(255,255,255,0.15);
+    border-bottom-color: #ffd54f;
+}
+</style>
+
+<script>
+// Aktiven Menüpunkt markieren
+document.addEventListener('DOMContentLoaded', function() {
+    const currentPage = window.location.pathname.split('/').pop();
+    document.querySelectorAll('.main-nav .nav-item').forEach(item => {
+        if (item.getAttribute('href') === currentPage) {
+            item.classList.add('active');
+        }
+    });
+});
+</script>
+
