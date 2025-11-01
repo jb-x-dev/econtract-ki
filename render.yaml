@@ -28,7 +28,9 @@ services:
       - key: SPRING_JPA_SHOW_SQL
         value: false
       - key: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
-        value: org.hibernate.dialect.MySQL8Dialect
+        value: org.hibernate.dialect.PostgreSQLDialect
+      - key: SPRING_JPA_DATABASE_PLATFORM
+        value: org.hibernate.dialect.PostgreSQLDialect
       - key: FLYWAY_ENABLED
         value: true
       - key: FLYWAY_BASELINE_ON_MIGRATE
@@ -40,4 +42,3 @@ databases:
     databaseName: econtract
     user: econtract_user
     plan: free
-    region: frankfurt
