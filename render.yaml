@@ -12,33 +12,23 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: production
       - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: econtract-db
-          property: connectionString
+        value: jdbc:mysql://mysql27317.db.dfn.de:3306/db27317_117?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Europe/Berlin
       - key: SPRING_DATASOURCE_USERNAME
-        fromDatabase:
-          name: econtract-db
-          property: user
+        value: db27317_117
       - key: SPRING_DATASOURCE_PASSWORD
-        fromDatabase:
-          name: econtract-db
-          property: password
+        value: "#eContract2025!"
+      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+        value: com.mysql.cj.jdbc.Driver
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: update
       - key: SPRING_JPA_SHOW_SQL
         value: false
       - key: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
-        value: org.hibernate.dialect.PostgreSQLDialect
+        value: org.hibernate.dialect.MySQL8Dialect
       - key: SPRING_JPA_DATABASE_PLATFORM
-        value: org.hibernate.dialect.PostgreSQLDialect
+        value: org.hibernate.dialect.MySQL8Dialect
       - key: FLYWAY_ENABLED
         value: true
       - key: FLYWAY_BASELINE_ON_MIGRATE
         value: true
     autoDeploy: true
-
-databases:
-  - name: econtract-db
-    databaseName: econtract
-    user: econtract_user
-    plan: free
