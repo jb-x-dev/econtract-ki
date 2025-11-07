@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preislisten - eContract KI</title>
+    
+    <link rel="stylesheet" href="css/minimal-theme.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+    <link rel="stylesheet" href="css/unified-menu-fix.css">
+</head>
+<body>
+    <aside id="unified-sidebar">
+        <div class="sidebar-header">
+            <a href="dashboard.html" class="sidebar-logo">
+                <span class="sidebar-logo-icon">📄</span>
+                <span>eContract KI</span>
+            </a>
+        </div>
+        
+        <div class="sidebar-search">
+            <input type="text" placeholder="Suche..." id="menuSearch">
+        </div>
+        
+        <nav class="sidebar-menu">
+            <div class="menu-item">
+                <a href="dashboard.html" class="menu-item-link">
+                    <span class="menu-item-icon">📊</span>
+                    <span class="menu-item-text">Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="menu-item">
+                <div class="menu-item-link" onclick="toggleSubmenu(this)">
+                    <span class="menu-item-icon">📝</span>
+                    <span class="menu-item-text">Verträge</span>
+                    <span class="menu-item-arrow">▼</span>
+                </div>
+                <div class="submenu">
+                    <div class="submenu-item">
+                        <a href="contracts.html" class="submenu-item-link">
+                            <span class="submenu-item-icon">📋</span>
+                            <span>Alle Verträge</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-item">
+                <div class="menu-item-link active" onclick="toggleSubmenu(this)">
+                    <span class="menu-item-icon">💰</span>
+                    <span class="menu-item-text">Abrechnung</span>
+                    <span class="menu-item-arrow">▼</span>
+                </div>
+                <div class="submenu" style="display: block;">
+                    <div class="submenu-item">
+                        <a href="service-records.html" class="submenu-item-link">
+                            <span class="submenu-item-icon">📝</span>
+                            <span>Leistungserfassung</span>
+                        </a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="price-management.html" class="submenu-item-link active">
+                            <span class="submenu-item-icon">💵</span>
+                            <span>Preislisten</span>
+                        </a>
+                    </div>
+                    <div class="submenu-item">
+                        <a href="invoicing.html" class="submenu-item-link">
+                            <span class="submenu-item-icon">🧾</span>
+                            <span>Rechnungen</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <header class="content-header">
+            <div class="header-content">
+                <h1 class="header-title">Preislisten</h1>
+                <p class="header-subtitle">Verwalten Sie Preise und Staffelpreise für Verträge</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="openCreatePriceModal()">
+                    <span>➕</span> Neuer Preis
+                </button>
+            </div>
+        </header>
+
+        <section class="content-section">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label for="filterContract">Vertrag:</label>
+                    <select id="filterContract" class="form-select" onchange="loadPrices()">
+                        <option value="">Alle Verträge</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterActive">Status:</label>
+                    <select id="filterActive" class="form-select" onchange="loadPrices()">
+                        <option value="">Alle</option>
+                        <option value="true" selected>Aktiv</option>
+                        <option value="false">Inaktiv</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">💵</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Gesamt Preise</div>
+                        <div class="stat-value" id="statTotal">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Aktive Preise</div>
+                        <div class="stat-value" id="statActive">0</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Mit Staffelpreisen</div>
+                        <div class="stat-value" id="statWithTiers">0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Vertrag</th>
+                            <th>Kategorie</th>
+                            <th>Beschreibung</th>
+                            <th>Einheit</th>
+                            <th>Einzelpreis</th>
+                            <th>Gültig von</th>
+                            <th>Gültig bis</th>
+                            <th>Status</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pricesTableBody">
+                        <tr>
+                            <td colspan="9" class="text-center">Lade Daten...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- Price Modal -->
+    <div id="priceModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="priceModalTitle">Neuer Preis</h2>
+                <button class="modal-close" onclick="closePriceModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="priceForm">
+                    <input type="hidden" id="priceId">
+                    
+                    <div class="form-group">
+                        <label for="priceContractId">Vertrag *</label>
+                        <select id="priceContractId" class="form-select" required>
+                            <option value="">Bitte wählen...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="serviceCategoryId">Kategorie</label>
+                        <select id="serviceCategoryId" class="form-select">
+                            <option value="">Bitte wählen...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priceDescription">Beschreibung *</label>
+                        <input type="text" id="priceDescription" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="priceUnit">Einheit *</label>
+                            <input type="text" id="priceUnit" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="unitPriceNet">Einzelpreis (netto) *</label>
+                            <input type="number" id="unitPriceNet" class="form-input" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="validFrom">Gültig von *</label>
+                            <input type="date" id="validFrom" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="validTo">Gültig bis</label>
+                            <input type="date" id="validTo" class="form-input">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="isActive" checked> Aktiv
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closePriceModal()">Abbrechen</button>
+                <button type="button" class="btn btn-primary" onclick="savePrice()">Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/unified-menu.js"></script>
+    <script src="js/price-management.js"></script>
+</body>
+</html>
