@@ -1,6 +1,4 @@
-# eContract KI - Simplified Dockerfile for Render
-# Single-stage build for reliability
-
+# eContract KI - Dockerfile with URL transformation
 FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
@@ -20,8 +18,12 @@ WORKDIR /app
 # Copy the built WAR file
 COPY --from=build /app/target/*.war app.war
 
+# Copy startup script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 # Expose port (Render will set PORT env variable)
 EXPOSE 8080
 
-# Run the application with dynamic port
-CMD ["sh", "-c", "java -Dserver.port=${PORT:-8080} -Xmx512m -Xms256m -jar app.war"]
+# Use startup script instead of direct java command
+CMD ["/app/start.sh"]
