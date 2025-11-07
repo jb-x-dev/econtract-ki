@@ -4,7 +4,15 @@
 -- Description: Add tables for service recording, price management, and invoicing
 -- Author: jb-x Development Team
 -- Date: 2025-11-01
+-- PostgreSQL Compatible
 -- ============================================================================
+
+-- Create ENUM types for billing module
+CREATE TYPE service_record_status AS ENUM ('DRAFT', 'APPROVED', 'INVOICED', 'REJECTED');
+CREATE TYPE invoice_type AS ENUM ('SINGLE', 'COLLECTIVE');
+CREATE TYPE invoice_status AS ENUM ('DRAFT', 'APPROVED', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED');
+CREATE TYPE billing_type AS ENUM ('MONTHLY', 'QUARTERLY', 'YEARLY', 'CUSTOM');
+CREATE TYPE billing_period_status AS ENUM ('OPEN', 'INVOICED', 'CLOSED');
 
 -- ============================================================================
 -- 1. SERVICE CATEGORIES (Leistungskategorien)
@@ -18,11 +26,11 @@ CREATE TABLE IF NOT EXISTS service_categories (
     default_unit VARCHAR(50),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    INDEX idx_code (code),
-    INDEX idx_active (is_active)
-)   ;
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_service_categories_code ON service_categories(code);
+CREATE INDEX idx_service_categories_active ON service_categories(is_active);
 
 -- ============================================================================
 -- 2. CONTRACT PRICES (Preislisten)
@@ -39,16 +47,16 @@ CREATE TABLE IF NOT EXISTS contract_prices (
     valid_to DATE,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY fk_cp_contract (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
-    FOREIGN KEY fk_cp_service_category (service_category_id) REFERENCES service_categories(id) ON DELETE SET NULL,
-    
-    INDEX idx_contract_id (contract_id),
-    INDEX idx_service_category_id (service_category_id),
-    INDEX idx_valid_period (valid_from, valid_to),
-    INDEX idx_active (is_active)
-)   ;
+    CONSTRAINT fk_cp_contract FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
+    CONSTRAINT fk_cp_service_category FOREIGN KEY (service_category_id) REFERENCES service_categories(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_contract_prices_contract_id ON contract_prices(contract_id);
+CREATE INDEX idx_contract_prices_service_category_id ON contract_prices(service_category_id);
+CREATE INDEX idx_contract_prices_valid_period ON contract_prices(valid_from, valid_to);
+CREATE INDEX idx_contract_prices_active ON contract_prices(is_active);
 
 -- ============================================================================
 -- 3. PRICE TIERS (Staffelpreise)
@@ -62,13 +70,13 @@ CREATE TABLE IF NOT EXISTS price_tiers (
     unit_price_net DECIMAL(15,2) NOT NULL,
     discount_percentage DECIMAL(5,2),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY fk_pt_contract_price (contract_price_id) REFERENCES contract_prices(id) ON DELETE CASCADE,
-    
-    INDEX idx_contract_price_id (contract_price_id),
-    INDEX idx_quantity_range (min_quantity, max_quantity)
-)   ;
+    CONSTRAINT fk_pt_contract_price FOREIGN KEY (contract_price_id) REFERENCES contract_prices(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_price_tiers_contract_price_id ON price_tiers(contract_price_id);
+CREATE INDEX idx_price_tiers_quantity_range ON price_tiers(min_quantity, max_quantity);
 
 -- ============================================================================
 -- 4. SERVICE RECORDS (Leistungserfassung)
@@ -86,7 +94,7 @@ CREATE TABLE IF NOT EXISTS service_records (
     unit VARCHAR(50) NOT NULL,
     unit_price_net DECIMAL(15,2) NOT NULL,
     total_net DECIMAL(15,2) NOT NULL,
-    status ENUM('DRAFT', 'APPROVED', 'INVOICED', 'REJECTED') NOT NULL DEFAULT 'DRAFT',
+    status service_record_status NOT NULL DEFAULT 'DRAFT',
     invoice_item_id BIGINT,
     invoiced_date DATE,
     performed_by_user_id BIGINT,
@@ -95,21 +103,21 @@ CREATE TABLE IF NOT EXISTS service_records (
     notes TEXT,
     created_by_user_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY fk_sr_contract (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
-    FOREIGN KEY fk_sr_service_category (service_category_id) REFERENCES service_categories(id) ON DELETE SET NULL,
-    FOREIGN KEY fk_sr_performed_by (performed_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY fk_sr_approved_by (approved_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY fk_sr_created_by (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    
-    INDEX idx_contract_id (contract_id),
-    INDEX idx_service_date (service_date),
-    INDEX idx_service_category_id (service_category_id),
-    INDEX idx_status (status),
-    INDEX idx_not_invoiced (status, invoice_item_id),
-    INDEX idx_service_period (service_period_start, service_period_end)
-)   ;
+    CONSTRAINT fk_sr_contract FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
+    CONSTRAINT fk_sr_service_category FOREIGN KEY (service_category_id) REFERENCES service_categories(id) ON DELETE SET NULL,
+    CONSTRAINT fk_sr_performed_by FOREIGN KEY (performed_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_sr_approved_by FOREIGN KEY (approved_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_sr_created_by FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_service_records_contract_id ON service_records(contract_id);
+CREATE INDEX idx_service_records_service_date ON service_records(service_date);
+CREATE INDEX idx_service_records_service_category_id ON service_records(service_category_id);
+CREATE INDEX idx_service_records_status ON service_records(status);
+CREATE INDEX idx_service_records_not_invoiced ON service_records(status, invoice_item_id);
+CREATE INDEX idx_service_records_service_period ON service_records(service_period_start, service_period_end);
 
 -- ============================================================================
 -- 5. INVOICES (Rechnungen)
@@ -118,7 +126,7 @@ CREATE TABLE IF NOT EXISTS service_records (
 CREATE TABLE IF NOT EXISTS invoices (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     invoice_number VARCHAR(50) NOT NULL UNIQUE,
-    invoice_type ENUM('SINGLE', 'COLLECTIVE') NOT NULL DEFAULT 'SINGLE',
+    invoice_type invoice_type NOT NULL DEFAULT 'SINGLE',
     invoice_date DATE NOT NULL,
     billing_period_start DATE NOT NULL,
     billing_period_end DATE NOT NULL,
@@ -135,7 +143,7 @@ CREATE TABLE IF NOT EXISTS invoices (
     discount_percentage DECIMAL(5,2),
     discount_amount DECIMAL(15,2),
     currency VARCHAR(3) NOT NULL DEFAULT 'EUR',
-    status ENUM('DRAFT', 'APPROVED', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED') NOT NULL DEFAULT 'DRAFT',
+    status invoice_status NOT NULL DEFAULT 'DRAFT',
     payment_terms VARCHAR(255),
     payment_method VARCHAR(50),
     bank_account VARCHAR(100),
@@ -148,22 +156,22 @@ CREATE TABLE IF NOT EXISTS invoices (
     approved_by_user_id BIGINT,
     created_by_user_id BIGINT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     cancelled_date TIMESTAMP,
     cancelled_reason TEXT,
     
-    FOREIGN KEY fk_inv_contract (contract_id) REFERENCES contracts(id) ON DELETE SET NULL,
-    FOREIGN KEY fk_inv_created_by (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY fk_inv_approved_by (approved_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    FOREIGN KEY fk_inv_sent_by (sent_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
-    
-    INDEX idx_invoice_number (invoice_number),
-    INDEX idx_invoice_date (invoice_date),
-    INDEX idx_due_date (due_date),
-    INDEX idx_status (status),
-    INDEX idx_contract_id (contract_id),
-    INDEX idx_billing_period (billing_period_start, billing_period_end)
-)   ;
+    CONSTRAINT fk_inv_contract FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE SET NULL,
+    CONSTRAINT fk_inv_created_by FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_inv_approved_by FOREIGN KEY (approved_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    CONSTRAINT fk_inv_sent_by FOREIGN KEY (sent_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_invoices_invoice_number ON invoices(invoice_number);
+CREATE INDEX idx_invoices_invoice_date ON invoices(invoice_date);
+CREATE INDEX idx_invoices_due_date ON invoices(due_date);
+CREATE INDEX idx_invoices_status ON invoices(status);
+CREATE INDEX idx_invoices_contract_id ON invoices(contract_id);
+CREATE INDEX idx_invoices_billing_period ON invoices(billing_period_start, billing_period_end);
 
 -- ============================================================================
 -- 6. INVOICE ITEMS (Rechnungspositionen)
@@ -190,16 +198,16 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     service_period_end DATE,
     notes TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY fk_ii_invoice (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE,
-    FOREIGN KEY fk_ii_service_record (service_record_id) REFERENCES service_records(id) ON DELETE SET NULL,
-    FOREIGN KEY fk_ii_contract (contract_id) REFERENCES contracts(id) ON DELETE SET NULL,
-    
-    INDEX idx_invoice_id (invoice_id),
-    INDEX idx_service_record_id (service_record_id),
-    INDEX idx_position_number (invoice_id, position_number)
-)   ;
+    CONSTRAINT fk_ii_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ii_service_record FOREIGN KEY (service_record_id) REFERENCES service_records(id) ON DELETE SET NULL,
+    CONSTRAINT fk_ii_contract FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_invoice_items_invoice_id ON invoice_items(invoice_id);
+CREATE INDEX idx_invoice_items_service_record_id ON invoice_items(service_record_id);
+CREATE INDEX idx_invoice_items_position_number ON invoice_items(invoice_id, position_number);
 
 -- ============================================================================
 -- 7. BILLING PERIODS (Abrechnungszeiträume)
@@ -211,19 +219,19 @@ CREATE TABLE IF NOT EXISTS billing_periods (
     period_name VARCHAR(100) NOT NULL,
     period_start DATE NOT NULL,
     period_end DATE NOT NULL,
-    billing_type ENUM('MONTHLY', 'QUARTERLY', 'YEARLY', 'CUSTOM') NOT NULL DEFAULT 'MONTHLY',
-    status ENUM('OPEN', 'INVOICED', 'CLOSED') NOT NULL DEFAULT 'OPEN',
+    billing_type billing_type NOT NULL DEFAULT 'MONTHLY',
+    status billing_period_status NOT NULL DEFAULT 'OPEN',
     invoice_id BIGINT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     
-    FOREIGN KEY fk_bp_contract (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
-    FOREIGN KEY fk_bp_invoice (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL,
-    
-    INDEX idx_contract_id (contract_id),
-    INDEX idx_period (period_start, period_end),
-    INDEX idx_status (status)
-)   ;
+    CONSTRAINT fk_bp_contract FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
+    CONSTRAINT fk_bp_invoice FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_billing_periods_contract_id ON billing_periods(contract_id);
+CREATE INDEX idx_billing_periods_period ON billing_periods(period_start, period_end);
+CREATE INDEX idx_billing_periods_status ON billing_periods(status);
 
 -- ============================================================================
 -- 8. INVOICE TEMPLATES (Rechnungsvorlagen)
@@ -232,7 +240,7 @@ CREATE TABLE IF NOT EXISTS billing_periods (
 CREATE TABLE IF NOT EXISTS invoice_templates (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
-    template_type ENUM('SINGLE', 'COLLECTIVE') NOT NULL DEFAULT 'SINGLE',
+    template_type invoice_type NOT NULL DEFAULT 'SINGLE',
     header_text TEXT,
     footer_text TEXT,
     payment_terms_text TEXT,
@@ -241,12 +249,12 @@ CREATE TABLE IF NOT EXISTS invoice_templates (
     is_default BOOLEAN NOT NULL DEFAULT FALSE,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    INDEX idx_name (name),
-    INDEX idx_default (is_default),
-    INDEX idx_active (is_active)
-)   ;
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_invoice_templates_name ON invoice_templates(name);
+CREATE INDEX idx_invoice_templates_default ON invoice_templates(is_default);
+CREATE INDEX idx_invoice_templates_active ON invoice_templates(is_active);
 
 -- ============================================================================
 -- 9. ADD FOREIGN KEY TO SERVICE_RECORDS (after invoice_items table exists)
@@ -288,8 +296,19 @@ INSERT INTO invoice_templates (
     'SINGLE',
     'Rechnung',
     'Vielen Dank für Ihr Vertrauen und die gute Zusammenarbeit.',
-    'Zahlbar innerhalb von 14 Tagen ohne Abzug.\nBitte verwenden Sie die Rechnungsnummer als Verwendungszweck.',
-    'jb-x business solutions GmbH\nMusterstraße 123\n12345 Musterstadt\nTel: +49 123 456789\nE-Mail: info@jb-x.de\nWeb: www.jb-x.de\n\nGeschäftsführer: Max Mustermann\nRegistergericht: Amtsgericht Musterstadt\nHRB 12345\nUSt-IdNr.: DE123456789',
+    'Zahlbar innerhalb von 14 Tagen ohne Abzug.
+Bitte verwenden Sie die Rechnungsnummer als Verwendungszweck.',
+    'jb-x business solutions GmbH
+Musterstraße 123
+12345 Musterstadt
+Tel: +49 123 456789
+E-Mail: info@jb-x.de
+Web: www.jb-x.de
+
+Geschäftsführer: Max Mustermann
+Registergericht: Amtsgericht Musterstadt
+HRB 12345
+USt-IdNr.: DE123456789',
     TRUE,
     TRUE
 );
@@ -344,11 +363,12 @@ SELECT
         WHEN i.status = 'DRAFT' THEN 'Entwurf'
         WHEN i.status = 'CANCELLED' THEN 'Storniert'
     END AS status_text,
-    DATEDIFF(CURRENT_DATE, i.due_date) AS days_overdue,
+    EXTRACT(DAY FROM (CURRENT_DATE - i.due_date)) AS days_overdue,
     COUNT(ii.id) AS item_count
 FROM invoices i
 LEFT JOIN invoice_items ii ON i.id = ii.invoice_id
-GROUP BY i.id;
+GROUP BY i.id, i.invoice_number, i.invoice_type, i.invoice_date, i.due_date, i.partner_name, 
+         i.subtotal_net, i.tax_amount, i.total_gross, i.status, i.currency;
 
 -- View: Contract Billing Summary
 CREATE OR REPLACE VIEW v_contract_billing_summary AS
@@ -367,7 +387,7 @@ FROM contracts c
 LEFT JOIN service_records sr ON c.id = sr.contract_id
 LEFT JOIN invoice_items ii ON sr.id = ii.service_record_id
 LEFT JOIN invoices i ON ii.invoice_id = i.id
-GROUP BY c.id;
+GROUP BY c.id, c.title, c.partner_name, c.contract_value;
 
 -- ============================================================================
 -- MIGRATION COMPLETE

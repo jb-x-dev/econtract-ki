@@ -1,5 +1,6 @@
 -- ============================================
 -- V4: Vertragsimport und Arbeitsvorrat
+-- PostgreSQL Compatible
 -- ============================================
 
 -- Tabelle für Import-Queue (Arbeitsvorrat)
@@ -38,13 +39,14 @@ CREATE TABLE IF NOT EXISTS contract_import_queue (
     
     -- Timestamps
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    INDEX idx_import_queue_status (status),
-    INDEX idx_import_queue_uploaded_by (uploaded_by),
-    INDEX idx_import_queue_created (created_at),
     FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE SET NULL
-)  ;
+);
+
+CREATE INDEX idx_import_queue_status ON contract_import_queue(status);
+CREATE INDEX idx_import_queue_uploaded_by ON contract_import_queue(uploaded_by);
+CREATE INDEX idx_import_queue_created ON contract_import_queue(created_at);
 
 -- Tabelle für Batch-Uploads
 CREATE TABLE IF NOT EXISTS import_batches (
@@ -60,15 +62,18 @@ CREATE TABLE IF NOT EXISTS import_batches (
     
     uploaded_by VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    
-    INDEX idx_import_batches_status (status),
-    INDEX idx_import_batches_uploaded_by (uploaded_by)
-)  ;
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_import_batches_status ON import_batches(status);
+CREATE INDEX idx_import_batches_uploaded_by ON import_batches(uploaded_by);
 
 -- Verknüpfung zwischen Batches und Queue-Items
 ALTER TABLE contract_import_queue 
-ADD COLUMN batch_id BIGINT NULL AFTER id,
-ADD INDEX idx_import_queue_batch (batch_id),
-ADD FOREIGN KEY (batch_id) REFERENCES import_batches(id) ON DELETE CASCADE;
+ADD COLUMN batch_id BIGINT NULL,
+ADD CONSTRAINT fk_import_queue_batch 
+    FOREIGN KEY (batch_id) 
+    REFERENCES import_batches(id) 
+    ON DELETE CASCADE;
 
+CREATE INDEX idx_import_queue_batch ON contract_import_queue(batch_id);

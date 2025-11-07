@@ -1,17 +1,17 @@
 -- V6: E-Mail-System, Kommunikationsschritte, Zahlungsverfolgung, Export-Funktionen
+-- PostgreSQL Compatible
 
 -- 1. E-Mail-System
 CREATE TABLE IF NOT EXISTS email_templates (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) NOT NULL UNIQUE,
     subject VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
     template_type VARCHAR(50) NOT NULL,
     variables TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_email_template_name (name)
-)  ;
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS email_queue (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -27,11 +27,12 @@ CREATE TABLE IF NOT EXISTS email_queue (
     error_message TEXT,
     retry_count INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (template_id) REFERENCES email_templates(id),
-    INDEX idx_status (status),
-    INDEX idx_scheduled_at (scheduled_at)
-)  ;
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (template_id) REFERENCES email_templates(id)
+);
+
+CREATE INDEX idx_email_queue_status ON email_queue(status);
+CREATE INDEX idx_email_queue_scheduled_at ON email_queue(scheduled_at);
 
 CREATE TABLE IF NOT EXISTS email_settings (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -43,8 +44,8 @@ CREATE TABLE IF NOT EXISTS email_settings (
     from_email VARCHAR(255) NOT NULL,
     from_name VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-)  ;
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- 2. Kommunikationsschritte
 CREATE TABLE IF NOT EXISTS communication_steps (
@@ -60,12 +61,13 @@ CREATE TABLE IF NOT EXISTS communication_steps (
     template_id BIGINT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
-    FOREIGN KEY (template_id) REFERENCES email_templates(id),
-    INDEX idx_next_execution (next_execution),
-    INDEX idx_is_active (is_active)
-)  ;
+    FOREIGN KEY (template_id) REFERENCES email_templates(id)
+);
+
+CREATE INDEX idx_communication_steps_next_execution ON communication_steps(next_execution);
+CREATE INDEX idx_communication_steps_is_active ON communication_steps(is_active);
 
 CREATE TABLE IF NOT EXISTS communication_step_participants (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -74,9 +76,10 @@ CREATE TABLE IF NOT EXISTS communication_step_participants (
     participant_name VARCHAR(255),
     participant_type VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (communication_step_id) REFERENCES communication_steps(id) ON DELETE CASCADE,
-    INDEX idx_comm_step (communication_step_id)
-)  ;
+    FOREIGN KEY (communication_step_id) REFERENCES communication_steps(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_communication_step_participants_comm_step ON communication_step_participants(communication_step_id);
 
 CREATE TABLE IF NOT EXISTS communication_history (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -85,9 +88,10 @@ CREATE TABLE IF NOT EXISTS communication_history (
     status VARCHAR(20) NOT NULL,
     recipients_count INT,
     error_message TEXT,
-    FOREIGN KEY (communication_step_id) REFERENCES communication_steps(id) ON DELETE CASCADE,
-    INDEX idx_executed_at (executed_at)
-)  ;
+    FOREIGN KEY (communication_step_id) REFERENCES communication_steps(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_communication_history_executed_at ON communication_history(executed_at);
 
 -- 3. Zahlungsverfolgung
 CREATE TABLE IF NOT EXISTS payments (
@@ -104,12 +108,13 @@ CREATE TABLE IF NOT EXISTS payments (
     department VARCHAR(100),
     cost_center VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
-    INDEX idx_due_date (due_date),
-    INDEX idx_status (status),
-    INDEX idx_department (department)
-)  ;
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_payments_due_date ON payments(due_date);
+CREATE INDEX idx_payments_status ON payments(status);
+CREATE INDEX idx_payments_department ON payments(department);
 
 CREATE TABLE IF NOT EXISTS payment_reminders (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -119,10 +124,11 @@ CREATE TABLE IF NOT EXISTS payment_reminders (
     sent BOOLEAN DEFAULT FALSE,
     sent_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE,
-    INDEX idx_reminder_date (reminder_date),
-    INDEX idx_sent (sent)
-)  ;
+    FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_payment_reminders_reminder_date ON payment_reminders(reminder_date);
+CREATE INDEX idx_payment_reminders_sent ON payment_reminders(sent);
 
 -- 4. Export-Funktionen
 CREATE TABLE IF NOT EXISTS export_jobs (
@@ -135,26 +141,47 @@ CREATE TABLE IF NOT EXISTS export_jobs (
     created_by VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP NULL,
-    error_message TEXT,
-    INDEX idx_status (status),
-    INDEX idx_created_at (created_at)
-)  ;
+    error_message TEXT
+);
+
+CREATE INDEX idx_export_jobs_status ON export_jobs(status);
+CREATE INDEX idx_export_jobs_created_at ON export_jobs(created_at);
 
 -- Standard E-Mail-Vorlagen einfügen
 INSERT INTO email_templates (name, subject, body, template_type, variables) VALUES
 ('contract_expiry_reminder', 'Vertrag läuft bald ab: {{contractTitle}}', 
-'Sehr geehrte Damen und Herren,\n\nder Vertrag "{{contractTitle}}" (Vertragsnummer: {{contractNumber}}) läuft am {{expiryDate}} ab.\n\nBitte prüfen Sie, ob eine Verlängerung erforderlich ist.\n\nMit freundlichen Grüßen\nIhr eContract KI Team', 
+'Sehr geehrte Damen und Herren,
+
+der Vertrag "{{contractTitle}}" (Vertragsnummer: {{contractNumber}}) läuft am {{expiryDate}} ab.
+
+Bitte prüfen Sie, ob eine Verlängerung erforderlich ist.
+
+Mit freundlichen Grüßen
+Ihr eContract KI Team', 
 'REMINDER', 'contractTitle,contractNumber,expiryDate'),
 
 ('contract_approval_request', 'Genehmigung erforderlich: {{contractTitle}}', 
-'Sehr geehrte Damen und Herren,\n\nder Vertrag "{{contractTitle}}" benötigt Ihre Genehmigung.\n\nBitte prüfen Sie den Vertrag und genehmigen oder lehnen Sie ihn ab.\n\nMit freundlichen Grüßen\nIhr eContract KI Team', 
+'Sehr geehrte Damen und Herren,
+
+der Vertrag "{{contractTitle}}" benötigt Ihre Genehmigung.
+
+Bitte prüfen Sie den Vertrag und genehmigen oder lehnen Sie ihn ab.
+
+Mit freundlichen Grüßen
+Ihr eContract KI Team', 
 'APPROVAL', 'contractTitle,contractNumber'),
 
 ('payment_reminder', 'Zahlungserinnerung: {{invoiceNumber}}', 
-'Sehr geehrte Damen und Herren,\n\ndie Zahlung für Rechnung {{invoiceNumber}} über {{amount}} EUR ist am {{dueDate}} fällig.\n\nBitte veranlassen Sie die Zahlung.\n\nMit freundlichen Grüßen\nIhr eContract KI Team', 
+'Sehr geehrte Damen und Herren,
+
+die Zahlung für Rechnung {{invoiceNumber}} über {{amount}} EUR ist am {{dueDate}} fällig.
+
+Bitte veranlassen Sie die Zahlung.
+
+Mit freundlichen Grüßen
+Ihr eContract KI Team', 
 'PAYMENT', 'invoiceNumber,amount,dueDate');
 
 -- Standard E-Mail-Einstellungen (Platzhalter)
 INSERT INTO email_settings (smtp_host, smtp_port, smtp_username, from_email, from_name) VALUES
 ('smtp.example.com', 587, 'noreply@example.com', 'noreply@example.com', 'eContract KI');
-
