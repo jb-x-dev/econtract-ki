@@ -11,25 +11,25 @@
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS service_categories (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     code VARCHAR(20) NOT NULL UNIQUE,
     description TEXT,
     default_unit VARCHAR(50),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_code (code),
     INDEX idx_active (is_active)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- ============================================================================
 -- 2. CONTRACT PRICES (Preislisten)
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS contract_prices (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     contract_id BIGINT NOT NULL,
     service_category_id BIGINT,
     description VARCHAR(255) NOT NULL,
@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS contract_prices (
     valid_from DATE NOT NULL,
     valid_to DATE,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     FOREIGN KEY fk_cp_contract (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
     FOREIGN KEY fk_cp_service_category (service_category_id) REFERENCES service_categories(id) ON DELETE SET NULL,
@@ -48,34 +48,34 @@ CREATE TABLE IF NOT EXISTS contract_prices (
     INDEX idx_service_category_id (service_category_id),
     INDEX idx_valid_period (valid_from, valid_to),
     INDEX idx_active (is_active)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- ============================================================================
 -- 3. PRICE TIERS (Staffelpreise)
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS price_tiers (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     contract_price_id BIGINT NOT NULL,
     min_quantity DECIMAL(10,2) NOT NULL,
     max_quantity DECIMAL(10,2),
     unit_price_net DECIMAL(15,2) NOT NULL,
     discount_percentage DECIMAL(5,2),
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     FOREIGN KEY fk_pt_contract_price (contract_price_id) REFERENCES contract_prices(id) ON DELETE CASCADE,
     
     INDEX idx_contract_price_id (contract_price_id),
     INDEX idx_quantity_range (min_quantity, max_quantity)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- ============================================================================
 -- 4. SERVICE RECORDS (Leistungserfassung)
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS service_records (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     contract_id BIGINT NOT NULL,
     service_date DATE NOT NULL,
     service_period_start DATE,
@@ -91,11 +91,11 @@ CREATE TABLE IF NOT EXISTS service_records (
     invoiced_date DATE,
     performed_by_user_id BIGINT,
     approved_by_user_id BIGINT,
-    approved_date DATETIME,
+    approved_date TIMESTAMP,
     notes TEXT,
     created_by_user_id BIGINT NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     FOREIGN KEY fk_sr_contract (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
     FOREIGN KEY fk_sr_service_category (service_category_id) REFERENCES service_categories(id) ON DELETE SET NULL,
@@ -109,14 +109,14 @@ CREATE TABLE IF NOT EXISTS service_records (
     INDEX idx_status (status),
     INDEX idx_not_invoiced (status, invoice_item_id),
     INDEX idx_service_period (service_period_start, service_period_end)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- ============================================================================
 -- 5. INVOICES (Rechnungen)
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS invoices (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     invoice_number VARCHAR(50) NOT NULL UNIQUE,
     invoice_type ENUM('SINGLE', 'COLLECTIVE') NOT NULL DEFAULT 'SINGLE',
     invoice_date DATE NOT NULL,
@@ -142,14 +142,14 @@ CREATE TABLE IF NOT EXISTS invoices (
     notes TEXT,
     customer_notes TEXT,
     pdf_file_path VARCHAR(500),
-    sent_date DATETIME,
+    sent_date TIMESTAMP,
     sent_by_user_id BIGINT,
-    approved_date DATETIME,
+    approved_date TIMESTAMP,
     approved_by_user_id BIGINT,
     created_by_user_id BIGINT NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    cancelled_date DATETIME,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    cancelled_date TIMESTAMP,
     cancelled_reason TEXT,
     
     FOREIGN KEY fk_inv_contract (contract_id) REFERENCES contracts(id) ON DELETE SET NULL,
@@ -163,14 +163,14 @@ CREATE TABLE IF NOT EXISTS invoices (
     INDEX idx_status (status),
     INDEX idx_contract_id (contract_id),
     INDEX idx_billing_period (billing_period_start, billing_period_end)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- ============================================================================
 -- 6. INVOICE ITEMS (Rechnungspositionen)
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS invoice_items (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     invoice_id BIGINT NOT NULL,
     position_number INT NOT NULL,
     service_record_id BIGINT,
@@ -189,8 +189,8 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     service_period_start DATE,
     service_period_end DATE,
     notes TEXT,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     FOREIGN KEY fk_ii_invoice (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE,
     FOREIGN KEY fk_ii_service_record (service_record_id) REFERENCES service_records(id) ON DELETE SET NULL,
@@ -199,14 +199,14 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     INDEX idx_invoice_id (invoice_id),
     INDEX idx_service_record_id (service_record_id),
     INDEX idx_position_number (invoice_id, position_number)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- ============================================================================
 -- 7. BILLING PERIODS (Abrechnungszeiträume)
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS billing_periods (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     contract_id BIGINT NOT NULL,
     period_name VARCHAR(100) NOT NULL,
     period_start DATE NOT NULL,
@@ -214,8 +214,8 @@ CREATE TABLE IF NOT EXISTS billing_periods (
     billing_type ENUM('MONTHLY', 'QUARTERLY', 'YEARLY', 'CUSTOM') NOT NULL DEFAULT 'MONTHLY',
     status ENUM('OPEN', 'INVOICED', 'CLOSED') NOT NULL DEFAULT 'OPEN',
     invoice_id BIGINT,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     FOREIGN KEY fk_bp_contract (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
     FOREIGN KEY fk_bp_invoice (invoice_id) REFERENCES invoices(id) ON DELETE SET NULL,
@@ -223,14 +223,14 @@ CREATE TABLE IF NOT EXISTS billing_periods (
     INDEX idx_contract_id (contract_id),
     INDEX idx_period (period_start, period_end),
     INDEX idx_status (status)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- ============================================================================
 -- 8. INVOICE TEMPLATES (Rechnungsvorlagen)
 -- ============================================================================
 
 CREATE TABLE IF NOT EXISTS invoice_templates (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE,
     template_type ENUM('SINGLE', 'COLLECTIVE') NOT NULL DEFAULT 'SINGLE',
     header_text TEXT,
@@ -240,13 +240,13 @@ CREATE TABLE IF NOT EXISTS invoice_templates (
     company_info TEXT,
     is_default BOOLEAN NOT NULL DEFAULT FALSE,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_name (name),
     INDEX idx_default (is_default),
     INDEX idx_active (is_active)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- ============================================================================
 -- 9. ADD FOREIGN KEY TO SERVICE_RECORDS (after invoice_items table exists)

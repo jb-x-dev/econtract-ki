@@ -2,7 +2,7 @@
 
 -- 1. E-Mail-System
 CREATE TABLE IF NOT EXISTS email_templates (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     subject VARCHAR(255) NOT NULL,
     body TEXT NOT NULL,
@@ -11,10 +11,10 @@ CREATE TABLE IF NOT EXISTS email_templates (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uk_email_template_name (name)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 CREATE TABLE IF NOT EXISTS email_queue (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     recipient_email VARCHAR(255) NOT NULL,
     recipient_name VARCHAR(255),
     subject VARCHAR(255) NOT NULL,
@@ -31,10 +31,10 @@ CREATE TABLE IF NOT EXISTS email_queue (
     FOREIGN KEY (template_id) REFERENCES email_templates(id),
     INDEX idx_status (status),
     INDEX idx_scheduled_at (scheduled_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 CREATE TABLE IF NOT EXISTS email_settings (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     smtp_host VARCHAR(255) NOT NULL,
     smtp_port INT NOT NULL,
     smtp_username VARCHAR(255),
@@ -44,11 +44,11 @@ CREATE TABLE IF NOT EXISTS email_settings (
     from_name VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 -- 2. Kommunikationsschritte
 CREATE TABLE IF NOT EXISTS communication_steps (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     contract_id BIGINT NOT NULL,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -65,10 +65,10 @@ CREATE TABLE IF NOT EXISTS communication_steps (
     FOREIGN KEY (template_id) REFERENCES email_templates(id),
     INDEX idx_next_execution (next_execution),
     INDEX idx_is_active (is_active)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 CREATE TABLE IF NOT EXISTS communication_step_participants (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     communication_step_id BIGINT NOT NULL,
     participant_email VARCHAR(255) NOT NULL,
     participant_name VARCHAR(255),
@@ -76,10 +76,10 @@ CREATE TABLE IF NOT EXISTS communication_step_participants (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (communication_step_id) REFERENCES communication_steps(id) ON DELETE CASCADE,
     INDEX idx_comm_step (communication_step_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 CREATE TABLE IF NOT EXISTS communication_history (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     communication_step_id BIGINT NOT NULL,
     executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(20) NOT NULL,
@@ -87,11 +87,11 @@ CREATE TABLE IF NOT EXISTS communication_history (
     error_message TEXT,
     FOREIGN KEY (communication_step_id) REFERENCES communication_steps(id) ON DELETE CASCADE,
     INDEX idx_executed_at (executed_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 -- 3. Zahlungsverfolgung
 CREATE TABLE IF NOT EXISTS payments (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     contract_id BIGINT NOT NULL,
     payment_type VARCHAR(50) NOT NULL,
     amount DECIMAL(15,2) NOT NULL,
@@ -109,10 +109,10 @@ CREATE TABLE IF NOT EXISTS payments (
     INDEX idx_due_date (due_date),
     INDEX idx_status (status),
     INDEX idx_department (department)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 CREATE TABLE IF NOT EXISTS payment_reminders (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     payment_id BIGINT NOT NULL,
     reminder_date DATE NOT NULL,
     reminder_type VARCHAR(50),
@@ -122,11 +122,11 @@ CREATE TABLE IF NOT EXISTS payment_reminders (
     FOREIGN KEY (payment_id) REFERENCES payments(id) ON DELETE CASCADE,
     INDEX idx_reminder_date (reminder_date),
     INDEX idx_sent (sent)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 -- 4. Export-Funktionen
 CREATE TABLE IF NOT EXISTS export_jobs (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     export_type VARCHAR(50) NOT NULL,
     format VARCHAR(10) NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS export_jobs (
     error_message TEXT,
     INDEX idx_status (status),
     INDEX idx_created_at (created_at)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 -- Standard E-Mail-Vorlagen einfügen
 INSERT INTO email_templates (name, subject, body, template_type, variables) VALUES

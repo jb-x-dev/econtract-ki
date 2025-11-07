@@ -4,7 +4,7 @@
 
 -- Tabelle für Import-Queue (Arbeitsvorrat)
 CREATE TABLE IF NOT EXISTS contract_import_queue (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     original_filename VARCHAR(255) NOT NULL,
     file_path VARCHAR(500) NOT NULL,
     file_size BIGINT,
@@ -44,11 +44,11 @@ CREATE TABLE IF NOT EXISTS contract_import_queue (
     INDEX idx_import_queue_uploaded_by (uploaded_by),
     INDEX idx_import_queue_created (created_at),
     FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 -- Tabelle für Batch-Uploads
 CREATE TABLE IF NOT EXISTS import_batches (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     batch_name VARCHAR(255),
     total_files INT DEFAULT 0,
     processed_files INT DEFAULT 0,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS import_batches (
     
     INDEX idx_import_batches_status (status),
     INDEX idx_import_batches_uploaded_by (uploaded_by)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+)  ;
 
 -- Verknüpfung zwischen Batches und Queue-Items
 ALTER TABLE contract_import_queue 

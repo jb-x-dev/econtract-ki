@@ -2,7 +2,7 @@
 
 -- Rahmenverträge Tabelle
 CREATE TABLE framework_contracts (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     framework_number VARCHAR(50) UNIQUE NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
@@ -23,7 +23,7 @@ CREATE TABLE framework_contracts (
     INDEX idx_partner (partner_name),
     INDEX idx_status (status),
     INDEX idx_end_date (end_date)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Verknüpfung von Einzelverträgen zu Rahmenverträgen
 ALTER TABLE contracts 
@@ -37,7 +37,7 @@ ADD CONSTRAINT fk_framework_contract
 
 -- Vertragspflege Aktivitäten
 CREATE TABLE contract_maintenance (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_id BIGINT,
     framework_contract_id BIGINT,
     maintenance_type ENUM('REVIEW', 'UPDATE', 'RENEWAL', 'TERMINATION', 'AMENDMENT', 'AUDIT') NOT NULL,
@@ -61,11 +61,11 @@ CREATE TABLE contract_maintenance (
         FOREIGN KEY (framework_contract_id) 
         REFERENCES framework_contracts(id) 
         ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Kalender-Events für Fristenmanagement
 CREATE TABLE calendar_events (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_id BIGINT,
     framework_contract_id BIGINT,
     event_type ENUM('DEADLINE', 'REMINDER', 'CANCELLATION', 'RENEWAL', 'REVIEW', 'MEETING') NOT NULL,
@@ -93,11 +93,11 @@ CREATE TABLE calendar_events (
         FOREIGN KEY (framework_contract_id) 
         REFERENCES framework_contracts(id) 
         ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Vertragspflege Checklisten
 CREATE TABLE maintenance_checklists (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     maintenance_id BIGINT NOT NULL,
     item_title VARCHAR(255) NOT NULL,
     item_description TEXT,
@@ -111,11 +111,11 @@ CREATE TABLE maintenance_checklists (
         FOREIGN KEY (maintenance_id) 
         REFERENCES contract_maintenance(id) 
         ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Rahmenvertrag Volumen Tracking
 CREATE TABLE framework_volume_tracking (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     framework_contract_id BIGINT NOT NULL,
     contract_id BIGINT,
     volume_used DECIMAL(15,2) NOT NULL,
@@ -132,5 +132,5 @@ CREATE TABLE framework_volume_tracking (
         FOREIGN KEY (contract_id) 
         REFERENCES contracts(id) 
         ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 

@@ -4,7 +4,7 @@
 
 -- Verträge (Haupttabelle)
 CREATE TABLE contracts (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_number VARCHAR(50) UNIQUE NOT NULL,
     title VARCHAR(500) NOT NULL,
     contract_type VARCHAR(100) NOT NULL,
@@ -28,11 +28,11 @@ CREATE TABLE contracts (
     INDEX idx_owner (owner_user_id),
     INDEX idx_created_at (created_at),
     FULLTEXT INDEX ft_title (title)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Vertragsversionen
 CREATE TABLE contract_versions (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_id BIGINT NOT NULL,
     version_number INT NOT NULL,
     content LONGTEXT,
@@ -46,11 +46,11 @@ CREATE TABLE contract_versions (
     FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
     INDEX idx_contract_version (contract_id, version_number),
     UNIQUE KEY uk_contract_version (contract_id, version_number)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Vertragsvorlagen
 CREATE TABLE contract_templates (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     contract_type VARCHAR(100) NOT NULL,
@@ -62,11 +62,11 @@ CREATE TABLE contract_templates (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_type_active (contract_type, is_active)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Klauselbibliothek
 CREATE TABLE contract_clauses (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     title VARCHAR(255) NOT NULL,
     category VARCHAR(100) NOT NULL,
     content TEXT NOT NULL,
@@ -80,11 +80,11 @@ CREATE TABLE contract_clauses (
     INDEX idx_category (category),
     INDEX idx_risk_level (risk_level),
     FULLTEXT INDEX ft_content (title, content)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Genehmigungsworkflows
 CREATE TABLE approval_workflows (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     contract_type VARCHAR(100),
@@ -94,11 +94,11 @@ CREATE TABLE approval_workflows (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_type_active (contract_type, is_active)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Genehmigungsschritte (Instanzen)
 CREATE TABLE approval_steps (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_id BIGINT NOT NULL,
     workflow_id BIGINT NOT NULL,
     step_number INT NOT NULL,
@@ -114,11 +114,11 @@ CREATE TABLE approval_steps (
     INDEX idx_contract_status (contract_id, status),
     INDEX idx_approver_status (approver_user_id, status),
     INDEX idx_due_date (due_date)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Fristen und Termine
 CREATE TABLE contract_deadlines (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_id BIGINT NOT NULL,
     deadline_type ENUM('NOTICE', 'RENEWAL', 'MILESTONE', 'PAYMENT', 'CUSTOM') NOT NULL,
     deadline_date DATE NOT NULL,
@@ -129,11 +129,11 @@ CREATE TABLE contract_deadlines (
     FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
     INDEX idx_deadline_date (deadline_date, is_completed),
     INDEX idx_contract_type (contract_id, deadline_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Audit Trail
 CREATE TABLE contract_audit_log (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_id BIGINT NOT NULL,
     action VARCHAR(100) NOT NULL,
     entity_type VARCHAR(100),
@@ -149,11 +149,11 @@ CREATE TABLE contract_audit_log (
     INDEX idx_contract_date (contract_id, created_at),
     INDEX idx_user_date (user_id, created_at),
     INDEX idx_action (action)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Benachrichtigungen
 CREATE TABLE notifications (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     user_id BIGINT NOT NULL,
     contract_id BIGINT,
     type VARCHAR(100) NOT NULL,
@@ -164,11 +164,11 @@ CREATE TABLE notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user_read (user_id, is_read, created_at),
     INDEX idx_contract (contract_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Dokumente und Anhänge
 CREATE TABLE contract_attachments (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_id BIGINT NOT NULL,
     file_name VARCHAR(500) NOT NULL,
     file_path VARCHAR(1000) NOT NULL,
@@ -180,11 +180,11 @@ CREATE TABLE contract_attachments (
     FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
     INDEX idx_contract (contract_id),
     INDEX idx_category (category)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- KI-Analysen
 CREATE TABLE contract_ai_analysis (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     contract_id BIGINT NOT NULL,
     analysis_type VARCHAR(100) NOT NULL,
     result JSON NOT NULL,
@@ -192,11 +192,11 @@ CREATE TABLE contract_ai_analysis (
     analyzed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (contract_id) REFERENCES contracts(id) ON DELETE CASCADE,
     INDEX idx_contract_type (contract_id, analysis_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Benutzer (vereinfachte Version für Standalone-Betrieb)
 CREATE TABLE users (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     username VARCHAR(100) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
@@ -210,7 +210,7 @@ CREATE TABLE users (
     INDEX idx_username (username),
     INDEX idx_email (email),
     INDEX idx_role (role)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+)   ;
 
 -- Initial Admin User (Passwort: admin123)
 INSERT INTO users (username, email, password_hash, full_name, role, department) 
