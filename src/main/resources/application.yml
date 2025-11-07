@@ -4,10 +4,10 @@ spring:
   
   # Datenbank-Konfiguration
   datasource:
-    url: jdbc:mysql://localhost:3306/econtract_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: ${DB_USERNAME:econtract_user}
-    password: ${DB_PASSWORD:econtract_pass}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/econtract}
+    username: ${SPRING_DATASOURCE_USERNAME:econtract_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:econtract_pass}
+    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -20,7 +20,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: ${SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT:org.hibernate.dialect.PostgreSQLDialect}
         format_sql: true
         use_sql_comments: true
         jdbc:
