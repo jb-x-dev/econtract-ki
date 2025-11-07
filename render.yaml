@@ -10,8 +10,8 @@ services:
     dockerContext: .
     healthCheckPath: /econtract/
     envVars:
-      - key: JAVA_TOOL_OPTIONS
-        value: -Xmx512m -Xms256m
+      - key: JAVA_OPTS
+        value: -Xmx450m -Xms256m
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: econtract-db
@@ -29,9 +29,11 @@ services:
       - key: SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT
         value: org.hibernate.dialect.PostgreSQLDialect
       - key: SPRING_FLYWAY_ENABLED
-        value: true
+        value: "true"
       - key: SPRING_FLYWAY_BASELINE_ON_MIGRATE
-        value: true
+        value: "true"
+      - key: SPRING_FLYWAY_LOCATIONS
+        value: classpath:db/migration
     autoDeploy: true
 
 databases:
