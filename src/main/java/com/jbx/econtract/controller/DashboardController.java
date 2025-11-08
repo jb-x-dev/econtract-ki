@@ -46,12 +46,14 @@ public class DashboardController {
         stats.put("active", contractService.countByStatus("ACTIVE"));
         stats.put("expired", contractService.countByStatus("EXPIRED"));
         
-        // Verträge nach Typ
+        // Verträge nach Typ (deutsche Bezeichnungen aus Sample Data)
         Map<String, Long> byType = new HashMap<>();
-        byType.put("SUPPLIER", contractRepository.countByContractType("SUPPLIER"));
-        byType.put("CUSTOMER", contractRepository.countByContractType("CUSTOMER"));
-        byType.put("SERVICE", contractRepository.countByContractType("SERVICE"));
+        byType.put("Lieferantenvertrag", contractRepository.countByContractType("Lieferantenvertrag"));
+        byType.put("Kundenvertrag", contractRepository.countByContractType("Kundenvertrag"));
+        byType.put("Dienstleistungsvertrag", contractRepository.countByContractType("Dienstleistungsvertrag"));
         byType.put("NDA", contractRepository.countByContractType("NDA"));
+        byType.put("Projektvertrag", contractRepository.countByContractType("Projektvertrag"));
+        byType.put("Rahmenvertrag", contractRepository.countByContractType("Rahmenvertrag"));
         stats.put("by_type", byType);
         
         // Ablaufende Verträge (nächste 30 Tage)
