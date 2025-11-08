@@ -48,7 +48,14 @@ public class InvoiceScheduleService {
             invoice.setInvoiceNumber(generateInvoiceNumber(contract, invoiceNumber));
             invoice.setInvoiceDate(currentDate);
             invoice.setDueDate(currentDate.plusDays(contract.getPaymentTermDays() != null ? contract.getPaymentTermDays() : 30));
-            invoice.setStatus("SCHEDULED");
+            invoice.setStatus(Invoice.InvoiceStatus.SCHEDULED);
+            
+            // Set partner information
+            invoice.setPartnerId(contract.getPartnerId() != null ? contract.getPartnerId() : 1L);
+            invoice.setPartnerName(contract.getPartnerName());
+            invoice.setPartnerAddress("TBD"); // To be filled later
+            invoice.setCurrency(contract.getCurrency() != null ? contract.getCurrency() : "EUR");
+            invoice.setCreatedByUserId(contract.getCreatedBy());
             
             // Set billing period
             LocalDate periodEnd = calculatePeriodEnd(currentDate, contract.getBillingCycle());
@@ -58,7 +65,7 @@ public class InvoiceScheduleService {
             
             // Set amounts
             BigDecimal amount = contract.getBillingAmount() != null ? contract.getBillingAmount() : BigDecimal.ZERO;
-            invoice.setTotalNet(amount);
+            invoice.setSubtotalNet(amount);
             invoice.setTaxRate(BigDecimal.valueOf(19)); // 19% MwSt
             BigDecimal taxAmount = amount.multiply(BigDecimal.valueOf(0.19));
             invoice.setTaxAmount(taxAmount);
@@ -127,7 +134,7 @@ public class InvoiceScheduleService {
         // Delete existing scheduled invoices
         List<Invoice> existingInvoices = invoiceRepository.findByContractId(contract.getId());
         List<Invoice> scheduledInvoices = existingInvoices.stream()
-            .filter(inv -> "SCHEDULED".equals(inv.getStatus()))
+            .filter(inv -> Invoice.InvoiceStatus.SCHEDULED.equals(inv.getStatus()))
             .toList();
         
         invoiceRepository.deleteAll(scheduledInvoices);

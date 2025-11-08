@@ -212,7 +212,8 @@ public class Invoice {
         SENT,
         PAID,
         OVERDUE,
-        CANCELLED
+        CANCELLED,
+        SCHEDULED  // For auto-generated future invoices
     }
 
     /**
