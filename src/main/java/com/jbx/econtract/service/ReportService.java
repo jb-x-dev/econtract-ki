@@ -399,10 +399,10 @@ public class ReportService {
 
             for (Invoice invoice : invoices) {
                 table.addCell(invoice.getInvoiceNumber());
-                table.addCell(invoice.getContract() != null ? invoice.getContract().getTitle() : "-");
-                table.addCell(formatCurrency(invoice.getTotalAmount(), "EUR"));
+                table.addCell(invoice.getContractId() != null ? "Contract #" + invoice.getContractId() : "-");
+                table.addCell(formatCurrency(invoice.getTotalGross(), "EUR"));
                 table.addCell(invoice.getDueDate() != null ? invoice.getDueDate().format(DATE_FORMATTER) : "-");
-                table.addCell(invoice.getPaymentStatus() != null ? invoice.getPaymentStatus().name() : "-");
+                table.addCell(invoice.getStatus() != null ? invoice.getStatus().name() : "-");
             }
 
             document.add(table);
@@ -410,7 +410,7 @@ public class ReportService {
             // Summary
             document.add(new Paragraph("\n"));
             BigDecimal totalAmount = invoices.stream()
-                    .map(i -> i.getTotalAmount() != null ? i.getTotalAmount() : BigDecimal.ZERO)
+                    .map(i -> i.getTotalGross() != null ? i.getTotalGross() : BigDecimal.ZERO)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             
             document.add(new Paragraph("Gesamtbetrag: " + formatCurrency(totalAmount, "EUR")).setBold());
@@ -441,10 +441,10 @@ public class ReportService {
         for (Invoice invoice : invoices) {
             Row row = sheet.createRow(rowNum++);
             row.createCell(0).setCellValue(invoice.getInvoiceNumber());
-            row.createCell(1).setCellValue(invoice.getContract() != null ? invoice.getContract().getTitle() : "-");
-            row.createCell(2).setCellValue(invoice.getTotalAmount() != null ? invoice.getTotalAmount().doubleValue() : 0);
+            row.createCell(1).setCellValue(invoice.getContractId() != null ? "Contract #" + invoice.getContractId() : "-");
+            row.createCell(2).setCellValue(invoice.getTotalGross() != null ? invoice.getTotalGross().doubleValue() : 0);
             row.createCell(3).setCellValue(invoice.getDueDate() != null ? invoice.getDueDate().format(DATE_FORMATTER) : "-");
-            row.createCell(4).setCellValue(invoice.getPaymentStatus() != null ? invoice.getPaymentStatus().name() : "-");
+            row.createCell(4).setCellValue(invoice.getStatus() != null ? invoice.getStatus().name() : "-");
         }
 
         for (int i = 0; i < headers.length; i++) {
