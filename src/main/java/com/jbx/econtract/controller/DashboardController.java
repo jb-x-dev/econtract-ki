@@ -33,6 +33,7 @@ public class DashboardController {
      */
     @GetMapping("/stats")
     @Operation(summary = "Erweiterte Dashboard-Statistiken")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<Map<String, Object>> getDashboardStats() {
         log.info("GET /api/v1/dashboard/stats");
         

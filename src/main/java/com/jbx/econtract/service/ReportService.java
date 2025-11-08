@@ -109,6 +109,7 @@ public class ReportService {
     /**
      * Generiert Vertragsbericht als Excel
      */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public byte[] generateContractReportExcel() throws Exception {
         log.info("Generating contract report Excel");
         
@@ -146,10 +147,16 @@ public class ReportService {
             row.createCell(8).setCellValue(contract.getCurrency() != null ? contract.getCurrency() : "EUR");
         }
 
-        // Auto-size columns
-        for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
-        }
+        // Set fixed column widths (faster than autoSizeColumn)
+        sheet.setColumnWidth(0, 4000);  // Vertragsnummer
+        sheet.setColumnWidth(1, 8000);  // Titel
+        sheet.setColumnWidth(2, 4000);  // Typ
+        sheet.setColumnWidth(3, 3000);  // Status
+        sheet.setColumnWidth(4, 6000);  // Partner
+        sheet.setColumnWidth(5, 3000);  // Startdatum
+        sheet.setColumnWidth(6, 3000);  // Enddatum
+        sheet.setColumnWidth(7, 3000);  // Wert
+        sheet.setColumnWidth(8, 2000);  // Währung
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         workbook.write(baos);
@@ -222,6 +229,7 @@ public class ReportService {
     /**
      * Generiert Compliance-Bericht als Excel
      */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public byte[] generateComplianceReportExcel() throws Exception {
         log.info("Generating compliance report Excel");
         
@@ -320,6 +328,7 @@ public class ReportService {
     /**
      * Generiert Finanzbericht als Excel
      */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public byte[] generateFinancialReportExcel() throws Exception {
         log.info("Generating financial report Excel");
         
@@ -423,6 +432,7 @@ public class ReportService {
     /**
      * Generiert Zahlungsbericht als Excel
      */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public byte[] generatePaymentReportExcel() throws Exception {
         log.info("Generating payment report Excel");
         
