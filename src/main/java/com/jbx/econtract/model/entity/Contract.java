@@ -64,6 +64,19 @@ public class Contract {
     @Column(name = "department", length = 100)
     private String department;
 
+    // Billing fields
+    @Column(name = "billing_cycle", length = 20)
+    private String billingCycle;
+
+    @Column(name = "billing_amount", precision = 15, scale = 2)
+    private BigDecimal billingAmount;
+
+    @Column(name = "billing_start_date")
+    private LocalDate billingStartDate;
+
+    @Column(name = "payment_term_days")
+    private Integer paymentTermDays = 30;
+
     @Column(name = "owner_user_id", nullable = false)
     private Long ownerUserId;
 

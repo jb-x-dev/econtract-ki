@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertrag hochladen - eContract KI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .upload-zone {
+            border: 3px dashed #0d6efd;
+            border-radius: 10px;
+            padding: 60px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        .upload-zone:hover {
+            background: #e9ecef;
+            border-color: #0a58ca;
+        }
+        .upload-zone.dragover {
+            background: #cfe2ff;
+            border-color: #084298;
+        }
+        .extraction-card {
+            border-left: 4px solid #0d6efd;
+        }
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="fas fa-file-contract"></i> eContract KI
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="dashboard.html">Dashboard</a>
+                <a class="nav-link" href="contracts.html">Verträge</a>
+                <a class="nav-link active" href="contract-upload.html">Upload</a>
+                <a class="nav-link" href="logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <h2><i class="fas fa-cloud-upload-alt"></i> Vertrag hochladen & KI-Analyse</h2>
+                <p class="text-muted">Laden Sie einen Vertrag hoch und lassen Sie die KI die wichtigsten Daten extrahieren.</p>
+            </div>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="row mt-4" id="uploadSection">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="upload-zone" id="uploadZone">
+                            <i class="fas fa-cloud-upload-alt fa-4x text-primary mb-3"></i>
+                            <h4>Datei hierher ziehen oder klicken</h4>
+                            <p class="text-muted">Unterstützte Formate: PDF, Word (.docx), Text (.txt)</p>
+                            <input type="file" id="fileInput" accept=".pdf,.docx,.txt" style="display: none;">
+                            <button class="btn btn-primary mt-3" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-folder-open"></i> Datei auswählen
+                            </button>
+                        </div>
+                        <div id="selectedFile" class="mt-3" style="display: none;">
+                            <div class="alert alert-info">
+                                <i class="fas fa-file"></i> <strong id="fileName"></strong>
+                                <button class="btn btn-sm btn-primary float-end" onclick="uploadFile()">
+                                    <i class="fas fa-upload"></i> Hochladen & Analysieren
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Section -->
+        <div class="row mt-4" id="processingSection" style="display: none;">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h4>KI analysiert Ihren Vertrag...</h4>
+                        <p class="text-muted">Dies kann 10-30 Sekunden dauern.</p>
+                        <div class="progress mt-3">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Extraction Result Section -->
+        <div class="row mt-4" id="resultSection" style="display: none;">
+            <div class="col-12">
+                <div class="card extraction-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5><i class="fas fa-robot"></i> Extrahierte Vertragsdaten</h5>
+                        <span class="badge bg-success status-badge">KI-Analyse abgeschlossen</span>
+                    </div>
+                    <div class="card-body">
+                        <form id="extractionForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Vertragsnummer</label>
+                                        <input type="text" class="form-control" id="contractNumber">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Vertragstyp</label>
+                                        <input type="text" class="form-control" id="contractType">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Titel</label>
+                                <input type="text" class="form-control" id="title">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Vertragspartner</label>
+                                <input type="text" class="form-control" id="partnerName">
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Startdatum</label>
+                                        <input type="date" class="form-control" id="startDate">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Enddatum</label>
+                                        <input type="date" class="form-control" id="endDate">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Kündigungsfrist (Tage)</label>
+                                        <input type="number" class="form-control" id="noticePeriodDays">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Vertragswert</label>
+                                        <input type="number" step="0.01" class="form-control" id="contractValue">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Währung</label>
+                                        <input type="text" class="form-control" id="currency">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Abrechnungszyklus</label>
+                                        <select class="form-select" id="billingCycle">
+                                            <option value="">Keine Abrechnung</option>
+                                            <option value="MONTHLY">Monatlich</option>
+                                            <option value="QUARTERLY">Quartalsweise</option>
+                                            <option value="YEARLY">Jährlich</option>
+                                            <option value="ONE_TIME">Einmalig</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Abrechnungsbetrag</label>
+                                        <input type="number" step="0.01" class="form-control" id="billingAmount">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Erste Rechnung am</label>
+                                        <input type="date" class="form-control" id="billingStartDate">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="autoRenewal">
+                                    <label class="form-check-label" for="autoRenewal">
+                                        Automatische Verlängerung
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-success btn-lg" onclick="confirmAndCreate()">
+                                    <i class="fas fa-check"></i> Vertrag anlegen & Rechnungen generieren
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                    <i class="fas fa-redo"></i> Neuer Upload
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFile = null;
+        let uploadId = null;
+
+        // Drag & Drop
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFileSelect(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            currentFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('selectedFile').style.display = 'block';
+        }
+
+        async function uploadFile() {
+            if (!currentFile) return;
+
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            formData.append('userId', '1'); // TODO: Get from session
+
+            document.getElementById('uploadSection').style.display = 'none';
+            document.getElementById('processingSection').style.display = 'block';
+
+            try {
+                const response = await fetch('/econtract/api/v1/contracts/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                uploadId = result.uploadId;
+
+                // Poll for extraction status
+                pollExtractionStatus();
+            } catch (error) {
+                alert('Fehler beim Upload: ' + error.message);
+                resetForm();
+            }
+        }
+
+        async function pollExtractionStatus() {
+            const maxAttempts = 60; // 60 * 2s = 2 minutes
+            let attempts = 0;
+
+            const interval = setInterval(async () => {
+                attempts++;
+
+                try {
+                    const response = await fetch(`/econtract/api/v1/contracts/upload/${uploadId}/status`);
+                    const result = await response.json();
+
+                    if (result.status === 'EXTRACTED') {
+                        clearInterval(interval);
+                        showExtractionResult(result.extractedData);
+                    } else if (result.status === 'FAILED') {
+                        clearInterval(interval);
+                        alert('KI-Analyse fehlgeschlagen: ' + result.errorMessage);
+                        resetForm();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(interval);
+                        alert('Timeout: KI-Analyse dauert zu lange.');
+                        resetForm();
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                    alert('Fehler beim Abrufen des Status: ' + error.message);
+                    resetForm();
+                }
+            }, 2000);
+        }
+
+        function showExtractionResult(data) {
+            document.getElementById('processingSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'block';
+
+            // Fill form with extracted data
+            document.getElementById('contractNumber').value = data.contractNumber || '';
+            document.getElementById('title').value = data.title || '';
+            document.getElementById('contractType').value = data.contractType || '';
+            document.getElementById('partnerName').value = data.partnerName || '';
+            document.getElementById('startDate').value = data.startDate || '';
+            document.getElementById('endDate').value = data.endDate || '';
+            document.getElementById('contractValue').value = data.contractValue || '';
+            document.getElementById('currency').value = data.currency || 'EUR';
+            document.getElementById('noticePeriodDays').value = data.noticePeriodDays || '';
+            document.getElementById('billingCycle').value = data.billingCycle || '';
+            document.getElementById('billingAmount').value = data.billingAmount || '';
+            document.getElementById('billingStartDate').value = data.billingStartDate || '';
+            document.getElementById('autoRenewal').checked = data.autoRenewal || false;
+        }
+
+        async function confirmAndCreate() {
+            const confirmedData = {
+                contractNumber: document.getElementById('contractNumber').value,
+                title: document.getElementById('title').value,
+                contractType: document.getElementById('contractType').value,
+                partnerName: document.getElementById('partnerName').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                contractValue: document.getElementById('contractValue').value,
+                currency: document.getElementById('currency').value,
+                noticePeriodDays: document.getElementById('noticePeriodDays').value,
+                billingCycle: document.getElementById('billingCycle').value,
+                billingAmount: document.getElementById('billingAmount').value,
+                billingStartDate: document.getElementById('billingStartDate').value,
+                autoRenewal: document.getElementById('autoRenewal').checked
+            };
+
+            try {
+                const response = await fetch(`/econtract/api/v1/contracts/upload/${uploadId}/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(confirmedData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert('Vertrag erfolgreich angelegt!\nVertragsnummer: ' + result.contractNumber);
+                    window.location.href = 'contracts.html';
+                } else {
+                    alert('Fehler: ' + result.message);
+                }
+            } catch (error) {
+                alert('Fehler beim Anlegen des Vertrags: ' + error.message);
+            }
+        }
+
+        function resetForm() {
+            currentFile = null;
+            uploadId = null;
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('processingSection').style.display = 'none';
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('selectedFile').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+        }
+    </script>
+</body>
+</html>

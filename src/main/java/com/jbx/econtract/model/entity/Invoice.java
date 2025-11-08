@@ -56,6 +56,9 @@ public class Invoice {
     @Column(name = "due_date", nullable = false)
     private LocalDate dueDate;
 
+    @Column(name = "scheduled_date")
+    private LocalDate scheduledDate;
+
     @Column(name = "contract_id")
     private Long contractId;
 
