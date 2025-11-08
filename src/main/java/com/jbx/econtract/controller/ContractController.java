@@ -53,6 +53,17 @@ public class ContractController {
     }
 
     /**
+     * Holt alle Verträge ohne Pagination (für Dashboard)
+     */
+    @GetMapping(params = "all")
+    @Operation(summary = "Alle Verträge ohne Pagination")
+    public ResponseEntity<java.util.List<ContractDTO>> getAllContractsUnpaged(@RequestParam(required = false) String all) {
+        log.info("GET /api/v1/contracts?all - Fetching all contracts");
+        java.util.List<ContractDTO> contracts = contractService.getAllContractsUnpaged();
+        return ResponseEntity.ok(contracts);
+    }
+
+    /**
      * Holt alle Verträge (paginiert)
      */
     @GetMapping

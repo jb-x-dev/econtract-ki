@@ -254,7 +254,7 @@
         // Load Dashboard Data
         async function loadDashboardData() {
             try {
-                const response = await fetch('/econtract/api/v1/contracts');
+                const response = await fetch('/econtract/api/v1/contracts?all=true');
                 const contracts = await response.json();
                 
                 // Update Stats

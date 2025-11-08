@@ -66,6 +66,17 @@ public class ContractService {
     }
 
     /**
+     * Findet alle Verträge ohne Pagination (für Dashboard)
+     */
+    @Transactional(readOnly = true)
+    public List<ContractDTO> getAllContractsUnpaged() {
+        log.debug("Fetching all contracts without pagination");
+        return contractRepository.findAll().stream()
+                .map(ContractDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Findet alle Verträge (paginiert)
      */
     @Transactional(readOnly = true)
