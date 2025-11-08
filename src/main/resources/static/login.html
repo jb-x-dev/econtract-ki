@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - eContract KI</title>
+    <link rel="stylesheet" href="/econtract/css/modern-responsive.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: var(--spacing-md);
+        }
+        
+        .login-card {
+            background: var(--bg-primary);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            padding: var(--spacing-2xl);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+        
+        .login-logo {
+            font-size: 4rem;
+            margin-bottom: var(--spacing-md);
+        }
+        
+        .login-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .login-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .login-form {
+            margin-top: var(--spacing-xl);
+        }
+        
+        .alert-error {
+            background: var(--danger-light);
+            border: 1px solid var(--danger-color);
+            color: #991b1b;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            font-size: 0.875rem;
+        }
+        
+        .alert-success {
+            background: var(--success-light);
+            border: 1px solid var(--success-color);
+            color: #065f46;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            font-size: 0.875rem;
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: var(--spacing-xl);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .demo-credentials {
+            background: var(--info-light);
+            border: 1px solid var(--info-color);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-md);
+            font-size: 0.875rem;
+        }
+        
+        .demo-credentials strong {
+            color: var(--primary-700);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">📄</div>
+                <h1 class="login-title">eContract KI</h1>
+                <p class="login-subtitle">Intelligente Vertragsverwaltung</p>
+            </div>
+            
+            <!-- Error Message -->
+            <div id="errorMessage" class="alert-error" style="display: none;">
+                <strong>Fehler:</strong> <span id="errorText"></span>
+            </div>
+            
+            <!-- Success Message -->
+            <div id="successMessage" class="alert-success" style="display: none;">
+                <strong>Erfolg:</strong> <span id="successText"></span>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">Benutzername</label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="username" 
+                        name="username" 
+                        placeholder="Benutzername eingeben"
+                        required
+                        autofocus
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Passwort</label>
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Passwort eingeben"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" id="rememberMe" name="remember-me">
+                    <label for="rememberMe" style="margin: 0; font-size: 0.875rem; cursor: pointer;">
+                        Angemeldet bleiben
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-full btn-lg">
+                    Anmelden
+                </button>
+            </form>
+            
+            <!-- Demo Credentials -->
+            <div class="demo-credentials">
+                <strong>Demo-Zugang:</strong><br>
+                Benutzername: <code>admin</code><br>
+                Passwort: <code>admin123</code>
+            </div>
+            
+            <div class="login-footer">
+                <p style="font-size: 0.875rem; color: var(--text-secondary);">
+                    © 2025 eContract KI · Version 1.0
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check for URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if (urlParams.get('error')) {
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('errorText').textContent = 'Ungültiger Benutzername oder Passwort';
+        }
+        
+        if (urlParams.get('logout')) {
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('successText').textContent = 'Sie wurden erfolgreich abgemeldet';
+        }
+        
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            try {
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
+                if (rememberMe) {
+                    formData.append('remember-me', 'on');
+                }
+                
+                const response = await fetch('/econtract/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData,
+                    credentials: 'include'
+                });
+                
+                if (response.ok || response.redirected) {
+                    // Login successful - redirect to dashboard
+                    window.location.href = '/econtract/dashboard.html';
+                } else {
+                    // Login failed
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('errorText').textContent = 'Ungültiger Benutzername oder Passwort';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('errorText').textContent = 'Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.';
+            }
+        });
+    </script>
+</body>
+</html>
