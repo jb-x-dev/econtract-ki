@@ -27,9 +27,9 @@ CREATE TABLE IF NOT EXISTS users (
     last_login TIMESTAMP
 );
 
-CREATE INDEX idx_users_username ON users(username);
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_active ON users(active);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_active ON users(active);
 
 -- ============================================================================
 -- 2. INSERT ADMIN USER
