@@ -1,15 +1,39 @@
 -- ============================================================================
 -- eContract KI - Fix Users Table
 -- Version: V11
--- Description: Add missing columns to users table if they don't exist
+-- Description: Add ALL missing columns to users table if they don't exist
 -- Author: jb-x Development Team
 -- Date: 2025-11-08
 -- PostgreSQL Compatible
 -- ============================================================================
 
--- Add missing columns if they don't exist
+-- Add ALL missing columns if they don't exist
 DO $$
 BEGIN
+    -- Add first_name column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='users' AND column_name='first_name') THEN
+        ALTER TABLE users ADD COLUMN first_name VARCHAR(100);
+    END IF;
+
+    -- Add last_name column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='users' AND column_name='last_name') THEN
+        ALTER TABLE users ADD COLUMN last_name VARCHAR(100);
+    END IF;
+
+    -- Add department column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='users' AND column_name='department') THEN
+        ALTER TABLE users ADD COLUMN department VARCHAR(50);
+    END IF;
+
+    -- Add position column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='users' AND column_name='position') THEN
+        ALTER TABLE users ADD COLUMN position VARCHAR(100);
+    END IF;
+
     -- Add active column if it doesn't exist
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
                    WHERE table_name='users' AND column_name='active') THEN
