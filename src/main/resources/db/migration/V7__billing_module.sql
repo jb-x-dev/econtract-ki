@@ -363,7 +363,7 @@ SELECT
         WHEN i.status = 'DRAFT' THEN 'Entwurf'
         WHEN i.status = 'CANCELLED' THEN 'Storniert'
     END AS status_text,
-    EXTRACT(DAY FROM (CURRENT_DATE - i.due_date)) AS days_overdue,
+    (CURRENT_DATE - i.due_date) AS days_overdue,
     COUNT(ii.id) AS item_count
 FROM invoices i
 LEFT JOIN invoice_items ii ON i.id = ii.invoice_id
