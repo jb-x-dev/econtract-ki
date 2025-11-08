@@ -153,14 +153,27 @@ public class ContractController {
     public ResponseEntity<Map<String, Object>> getStatistics() {
         log.info("GET /api/v1/contracts/stats");
         
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("total", contractService.countAll());
-        stats.put("draft", contractService.countByStatus("DRAFT"));
-        stats.put("in_approval", contractService.countByStatus("IN_APPROVAL"));
-        stats.put("active", contractService.countByStatus("ACTIVE"));
-        stats.put("expired", contractService.countByStatus("EXPIRED"));
-        
-        return ResponseEntity.ok(stats);
+        try {
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("total", contractService.countAll());
+            stats.put("draft", contractService.countByStatus("DRAFT"));
+            stats.put("in_approval", contractService.countByStatus("IN_APPROVAL"));
+            stats.put("active", contractService.countByStatus("ACTIVE"));
+            stats.put("expired", contractService.countByStatus("EXPIRED"));
+            
+            log.info("Stats: {}", stats);
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            log.error("Error loading statistics", e);
+            // Return zeros instead of error
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("total", 0L);
+            stats.put("draft", 0L);
+            stats.put("in_approval", 0L);
+            stats.put("active", 0L);
+            stats.put("expired", 0L);
+            return ResponseEntity.ok(stats);
+        }
     }
 }
 

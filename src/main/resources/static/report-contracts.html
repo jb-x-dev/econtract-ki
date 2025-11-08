@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertragsberichte - eContract KI</title>
+    
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <link rel="stylesheet" href="/econtract/css/modern-responsive.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+</head>
+<body>
+    <!-- Unified Sidebar -->
+    <aside id="unified-sidebar"></aside>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <div class="content-header">
+            <h1>📊 Vertragsberichte</h1>
+        </div>
+
+        <div class="container">
+            <div class="card">
+                <h2>Vertragsbericht generieren</h2>
+                <p>Erstellen Sie einen umfassenden Bericht über alle Verträge im System.</p>
+                
+                <div class="report-actions">
+                    <button class="btn btn-primary" onclick="exportPDF()">
+                        📄 Als PDF exportieren
+                    </button>
+                    <button class="btn btn-success" onclick="exportExcel()">
+                        📊 Als Excel exportieren
+                    </button>
+                </div>
+
+                <div class="report-preview" id="reportPreview">
+                    <h3>Berichtsinhalte:</h3>
+                    <ul>
+                        <li>✅ Alle Verträge mit Details</li>
+                        <li>✅ Vertragsnummer, Titel, Typ, Status</li>
+                        <li>✅ Partner, Laufzeit, Wert</li>
+                        <li>✅ Zusammenfassung und Statistiken</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Statistiken</h3>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <h4>Gesamt</h4>
+                        <p class="stat-number" id="totalContracts">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Aktiv</h4>
+                        <p class="stat-number" id="activeContracts">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Entwürfe</h4>
+                        <p class="stat-number" id="draftContracts">-</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Gesamtwert</h4>
+                        <p class="stat-number" id="totalValue">-</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Menu JS -->
+    <script src="js/unified-menu.js"></script>
+    
+    <script>
+        const API_BASE = '/econtract/api/v1';
+
+        // Load statistics on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStatistics();
+        });
+
+        async function loadStatistics() {
+            try {
+                const response = await fetch(`${API_BASE}/contracts/stats`);
+                if (!response.ok) throw new Error('Failed to load statistics');
+                
+                const stats = await response.json();
+                document.getElementById('totalContracts').textContent = stats.total || 0;
+                document.getElementById('activeContracts').textContent = stats.active || 0;
+                document.getElementById('draftContracts').textContent = stats.draft || 0;
+                
+                // Calculate total value (placeholder)
+                document.getElementById('totalValue').textContent = '€ -';
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        async function exportPDF() {
+            try {
+                const response = await fetch(`${API_BASE}/reports/contracts/pdf`);
+                if (!response.ok) throw new Error('Failed to generate PDF');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Vertragsbericht_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                alert('✅ PDF-Bericht wurde erfolgreich erstellt!');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('❌ Fehler beim Erstellen des PDF-Berichts');
+            }
+        }
+
+        async function exportExcel() {
+            try {
+                const response = await fetch(`${API_BASE}/reports/contracts/excel`);
+                if (!response.ok) throw new Error('Failed to generate Excel');
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Vertragsbericht_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                alert('✅ Excel-Bericht wurde erfolgreich erstellt!');
+            } catch (error) {
+                console.error('Error generating Excel:', error);
+                alert('❌ Fehler beim Erstellen des Excel-Berichts');
+            }
+        }
+    </script>
+</body>
+</html>

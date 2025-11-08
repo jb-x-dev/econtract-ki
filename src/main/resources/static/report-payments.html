@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zahlungsberichte - eContract KI</title>
+    
+    <link rel="stylesheet" href="/econtract/css/main.css">
+    <link rel="stylesheet" href="/econtract/css/modern-responsive.css">
+    <link rel="stylesheet" href="css/unified-menu-minimal.css">
+</head>
+<body>
+    <aside id="unified-sidebar"></aside>
+    <div id="main-content">
+        <div class="content-header">
+            <h1>💳 Zahlungsberichte</h1>
+        </div>
+        <div class="container">
+            <div class="card">
+                <h2>Zahlungsbericht generieren</h2>
+                <p>Erstellen Sie einen Bericht über Rechnungen und Zahlungen.</p>
+                <div class="report-actions">
+                    <button class="btn btn-primary" onclick="exportPDF()">📄 Als PDF exportieren</button>
+                    <button class="btn btn-success" onclick="exportExcel()">📊 Als Excel exportieren</button>
+                </div>
+                <div class="report-preview">
+                    <h3>Berichtsinhalte:</h3>
+                    <ul>
+                        <li>💳 Offene Rechnungen</li>
+                        <li>💳 Zahlungsstatus</li>
+                        <li>💳 Fälligkeitsdaten</li>
+                        <li>💳 Zahlungsstatistiken</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/unified-menu.js"></script>
+    <script>
+        const API_BASE = '/econtract/api/v1';
+        async function exportPDF() {
+            try {
+                const response = await fetch(`${API_BASE}/reports/payments/pdf`);
+                if (!response.ok) throw new Error('Failed to generate PDF');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Zahlungsbericht_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                alert('💳 PDF-Bericht wurde erfolgreich erstellt!');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('❌ Fehler beim Erstellen des PDF-Berichts');
+            }
+        }
+        async function exportExcel() {
+            try {
+                const response = await fetch(`${API_BASE}/reports/payments/excel`);
+                if (!response.ok) throw new Error('Failed to generate Excel');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Zahlungsbericht_${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                alert('💳 Excel-Bericht wurde erfolgreich erstellt!');
+            } catch (error) {
+                console.error('Error generating Excel:', error);
+                alert('❌ Fehler beim Erstellen des Excel-Berichts');
+            }
+        }
+    </script>
+</body>
+</html>
