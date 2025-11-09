@@ -1,12 +1,13 @@
 /**
  * eContract KI - Unified Menu System
- * Version: 4.2
+ * Version: 5.0
  * 
  * Zentrales, einheitliches Menü für alle Seiten
+ * Überarbeitete Struktur: Logische Gruppierung, keine Duplikate
  */
 
 const UnifiedMenu = {
-    // Menü-Struktur
+    // Menü-Struktur (überarbeitet)
     menuStructure: [
         {
             id: 'dashboard',
@@ -24,45 +25,43 @@ const UnifiedMenu = {
             submenu: [
                 { title: 'Alle Verträge', url: 'contracts.html', icon: '📋' },
                 { title: 'Neuer Vertrag', url: 'contract-edit.html', icon: '➕' },
-                { title: 'Rahmenverträge', url: 'framework-contracts.html', icon: '📑' }
-            ]
-        },
-        {
-            id: 'import',
-            icon: '📥',
-            title: 'Import & OCR',
-            url: null,
-            description: 'Dokumente importieren',
-            badge: 'KI',
-            submenu: [
-                { title: 'Vertragsimport', url: 'contract-import.html', icon: '📤' },
-                { title: 'OCR Scan', url: 'ocr-scan.html', icon: '📷' }
+                { title: 'Rahmenverträge', url: 'framework-contracts.html', icon: '📑' },
+                { title: 'Fristen & Termine', url: 'deadlines.html', icon: '⏰' },
+                { title: 'Kalender', url: 'calendar.html', icon: '📅' }
             ]
         },
         {
             id: 'ai',
             icon: '🤖',
-            title: 'KI-Assistent',
+            title: 'KI-Funktionen',
             url: null,
             description: 'KI-gestützte Funktionen',
             badge: 'KI',
             submenu: [
                 { title: 'KI-Assistent', url: 'ai-assistant.html', icon: '💬' },
+                { title: 'Vertragsanalyse', url: 'contract-analysis.html', icon: '📊' },
                 { title: 'Vertragserstellung', url: 'ai-contract-creation.html', icon: '✨' },
-                { title: 'Vertragsanalyse', url: 'contract-analysis.html', icon: '📊' }
+                { title: 'OCR & Import', url: 'contract-import.html', icon: '📤' },
+                { title: 'OCR Scan', url: 'ocr-scan.html', icon: '📷' }
             ]
         },
         {
-            id: 'framework',
-            icon: '📑',
-            title: 'Rahmenverträge',
-            url: 'framework-contracts.html',
-            description: 'Rahmenverträge verwalten'
+            id: 'reports',
+            icon: '📈',
+            title: 'Berichte',
+            url: null,
+            description: 'Auswertungen und Reports',
+            submenu: [
+                { title: 'Vertragsberichte', url: 'reports/contracts.html', icon: '📊' },
+                { title: 'Finanzberichte', url: 'reports/financial.html', icon: '💰' },
+                { title: 'Compliance-Berichte', url: 'reports/compliance.html', icon: '⚖️' },
+                { title: 'Dashboard-Reports', url: 'reports/dashboard.html', icon: '📈' }
+            ]
         },
         {
-            id: 'approvals',
+            id: 'workflows',
             icon: '✅',
-            title: 'Genehmigungen',
+            title: 'Workflows',
             url: null,
             description: 'Genehmigungsworkflows',
             submenu: [
@@ -72,54 +71,42 @@ const UnifiedMenu = {
             ]
         },
         {
-            id: 'deadlines',
-            icon: '⏰',
-            title: 'Fristen',
-            url: 'deadlines.html',
-            description: 'Fristen und Erinnerungen'
-        },
-        {
-            id: 'calendar',
-            icon: '📅',
-            title: 'Kalender',
-            url: 'calendar.html',
-            description: 'Terminübersicht'
-        },
-        {
-            id: 'maintenance',
+            id: 'masterdata',
             icon: '🔧',
-            title: 'Pflege',
+            title: 'Stammdaten',
             url: null,
             description: 'Stammdaten pflegen',
             submenu: [
-                { title: 'Vertragspflege', url: 'maintenance.html', icon: '🛠️' },
                 { title: 'Partner', url: 'partners.html', icon: '🏢' },
-                { title: 'Kategorien', url: 'categories.html', icon: '🏷️' }
-            ]
-        },
-        {
-            id: 'reports',
-            icon: '📊',
-            title: 'Berichte',
-            url: null,
-            description: 'Auswertungen und Reports',
-            badge: 'NEU',
-            submenu: [
-                { title: 'Vertragsberichte', url: 'reports/contracts.html', icon: '📈' },
-                { title: 'Finanzberichte', url: 'reports/financial.html', icon: '💰' },
-                { title: 'Compliance', url: 'reports/compliance.html', icon: '⚖️' }
+                { title: 'Kategorien', url: 'categories.html', icon: '🏷️' },
+                { title: 'Preise', url: 'price-management.html', icon: '💵' },
+                { title: 'Vertragspflege', url: 'maintenance.html', icon: '🛠️' }
             ]
         },
         {
             id: 'admin',
             icon: '👥',
-            title: 'Benutzer',
+            title: 'Administration',
             url: null,
-            description: 'Benutzerverwaltung',
+            description: 'Systemverwaltung',
             submenu: [
                 { title: 'Benutzer', url: 'admin/users.html', icon: '👤' },
-                { title: 'Rollen', url: 'admin/roles.html', icon: '🎭' },
-                { title: 'Gruppen', url: 'admin/groups.html', icon: '👥' }
+                { title: 'Rollen & Rechte', url: 'admin/roles.html', icon: '🎭' },
+                { title: 'Gruppen', url: 'admin/groups.html', icon: '👥' },
+                { title: 'Einstellungen', url: 'settings/general.html', icon: '⚙️' },
+                { title: 'System', url: 'settings/system.html', icon: '🖥️' }
+            ]
+        },
+        {
+            id: 'help',
+            icon: '❓',
+            title: 'Hilfe',
+            url: null,
+            description: 'Hilfe und Support',
+            submenu: [
+                { title: 'Dokumentation', url: 'help/docs.html', icon: '📚' },
+                { title: 'FAQ', url: 'help/faq.html', icon: '💡' },
+                { title: 'Support', url: 'help/support.html', icon: '🆘' }
             ]
         }
     ],
@@ -193,11 +180,15 @@ const UnifiedMenu = {
         html += `
             </nav>
             <div class="sidebar-footer">
+                <a href="profile.html" class="sidebar-link">
+                    <span class="sidebar-icon">👤</span>
+                    <span class="sidebar-title">Profil</span>
+                </a>
                 <a href="/econtract/swagger-ui.html" target="_blank" class="sidebar-link">
                     <span class="sidebar-icon">📚</span>
                     <span class="sidebar-title">API Dokumentation</span>
                 </a>
-                <div class="sidebar-version">Version 4.2</div>
+                <div class="sidebar-version">Version 5.0</div>
             </div>
         `;
 
@@ -333,4 +324,3 @@ if (!document.getElementById('unified-sidebar')) {
 
 // Auto-Initialisierung
 UnifiedMenu.init();
-
