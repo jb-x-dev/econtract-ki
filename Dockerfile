@@ -7,8 +7,16 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-# Build the application (skip tests for faster build)
-RUN mvn clean package -DskipTests
+# Build the application with retry logic (Maven Central can have temporary issues)
+# Retry up to 3 times with 10 second delays
+RUN for i in 1 2 3; do \
+    echo "Maven build attempt $i/3..." && \
+    mvn clean package -DskipTests && break || \
+    (echo "Maven build failed, waiting 10 seconds before retry..." && sleep 10); \
+    done && \
+    if [ ! -f target/*.war ]; then \
+        echo "Maven build failed after 3 attempts" && exit 1; \
+    fi
 
 # Runtime with OpenJDK 17
 FROM eclipse-temurin:17-jre
