@@ -98,6 +98,18 @@ app:
   version: 1.0.0
   admin-email: admin@jb-x.com
   
+  # Security Settings
+  security:
+    # IP Whitelist (disabled by default)
+    ip-whitelist:
+      enabled: false
+      allowed-ips: # Comma-separated list of allowed IPs
+    
+    # Rate Limiting (future implementation)
+    rate-limit:
+      enabled: false
+      max-requests-per-minute: 60
+  
   # Notification Settings
   notifications:
     enabled: true
