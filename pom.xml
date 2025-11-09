@@ -14,7 +14,7 @@
     
     <groupId>com.jbx</groupId>
     <artifactId>econtract-ki</artifactId>
-    <version>1.0.8-SNAPSHOT</version>
+    <version>1.0.9-SNAPSHOT</version>
     <packaging>war</packaging>
     
     <name>eContract KI</name>
@@ -125,10 +125,12 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>10.4.1</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-mysql</artifactId>
+            <version>10.4.1</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
