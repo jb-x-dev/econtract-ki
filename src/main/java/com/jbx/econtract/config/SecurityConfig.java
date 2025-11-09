@@ -24,6 +24,7 @@ public class SecurityConfig {
                 // Public resources
                 .requestMatchers("/login.html", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/health", "/actuator/health").permitAll()
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )

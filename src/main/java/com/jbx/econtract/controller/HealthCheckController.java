@@ -15,7 +15,6 @@ import java.util.Map;
  * Health Check Controller für Monitoring und Keep-Alive
  */
 @RestController
-@RequestMapping("/api/public")
 @Slf4j
 public class HealthCheckController {
 
@@ -24,10 +23,29 @@ public class HealthCheckController {
     private static LocalDateTime lastCheck = LocalDateTime.now();
 
     /**
-     * Health Check Endpoint
-     * Wird von UptimeRobot alle 5 Minuten aufgerufen
+     * Health Check Endpoint (Root)
+     * For Render.com health checks
      */
     @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheckRoot() {
+        requestCount++;
+        LocalDateTime now = LocalDateTime.now();
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("timestamp", now.format(FORMATTER));
+        response.put("service", "eContract KI");
+        
+        lastCheck = now;
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Health Check Endpoint (API Public)
+     * Wird von UptimeRobot alle 5 Minuten aufgerufen
+     */
+    @GetMapping("/api/public/health")
     public ResponseEntity<Map<String, Object>> healthCheck() {
         requestCount++;
         LocalDateTime now = LocalDateTime.now();
