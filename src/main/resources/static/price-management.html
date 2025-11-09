@@ -3,231 +3,720 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preislisten - eContract KI</title>
+    <title>Preise - eContract KI</title>
     
+    <!-- Unified Menu CSS -->
+    <link rel="stylesheet" href="css/unified-menu.css">
     <link rel="stylesheet" href="css/minimal-theme.css">
-    <link rel="stylesheet" href="css/unified-menu-minimal.css">
-    <link rel="stylesheet" href="css/unified-menu-fix.css">
-    <link rel="stylesheet" href="/econtract/css/modern-responsive.css">
+    
+    <!-- Responsive CSS -->
+    <link rel="stylesheet" href="css/modern-responsive.css">
+    
+    <style>
+        .content-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .content-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .toolbar button {
+            padding: 10px 20px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .toolbar button:hover {
+            background: #059669;
+        }
+        
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .filter-bar select {
+            padding: 10px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+        
+        .price-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .price-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .price-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+        
+        .price-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .price-card-title {
+            flex: 1;
+        }
+        
+        .price-card-title h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: #1e293b;
+        }
+        
+        .price-card-title p {
+            margin: 0;
+            font-size: 14px;
+            color: #64748b;
+        }
+        
+        .price-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .price-amount {
+            font-size: 32px;
+            font-weight: 700;
+            color: #10b981;
+            margin: 15px 0;
+        }
+        
+        .price-unit {
+            font-size: 16px;
+            color: #64748b;
+            font-weight: 400;
+        }
+        
+        .price-details {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .price-detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .price-detail-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .price-detail-label {
+            color: #64748b;
+        }
+        
+        .price-detail-value {
+            color: #1e293b;
+            font-weight: 600;
+        }
+        
+        .price-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .price-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+        
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #475569;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .form-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #059669;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-    <aside id="unified-sidebar">
-        <div class="sidebar-header">
-            <a href="dashboard.html" class="sidebar-logo">
-                <span class="sidebar-logo-icon">📄</span>
-                <span>eContract KI</span>
-            </a>
-        </div>
-        
-        <div class="sidebar-search">
-            <input type="text" placeholder="Suche..." id="menuSearch">
-        </div>
-        
-        <nav class="sidebar-menu">
-            <div class="menu-item">
-                <a href="dashboard.html" class="menu-item-link">
-                    <span class="menu-item-icon">📊</span>
-                    <span class="menu-item-text">Dashboard</span>
-                </a>
-            </div>
-            
-            <div class="menu-item">
-                <div class="menu-item-link" onclick="toggleSubmenu(this)">
-                    <span class="menu-item-icon">📝</span>
-                    <span class="menu-item-text">Verträge</span>
-                    <span class="menu-item-arrow">▼</span>
-                </div>
-                <div class="submenu">
-                    <div class="submenu-item">
-                        <a href="contracts.html" class="submenu-item-link">
-                            <span class="submenu-item-icon">📋</span>
-                            <span>Alle Verträge</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="menu-item">
-                <div class="menu-item-link active" onclick="toggleSubmenu(this)">
-                    <span class="menu-item-icon">💰</span>
-                    <span class="menu-item-text">Abrechnung</span>
-                    <span class="menu-item-arrow">▼</span>
-                </div>
-                <div class="submenu" style="display: block;">
-                    <div class="submenu-item">
-                        <a href="service-records.html" class="submenu-item-link">
-                            <span class="submenu-item-icon">📝</span>
-                            <span>Leistungserfassung</span>
-                        </a>
-                    </div>
-                    <div class="submenu-item">
-                        <a href="price-management.html" class="submenu-item-link active">
-                            <span class="submenu-item-icon">💵</span>
-                            <span>Preislisten</span>
-                        </a>
-                    </div>
-                    <div class="submenu-item">
-                        <a href="invoicing.html" class="submenu-item-link">
-                            <span class="submenu-item-icon">🧾</span>
-                            <span>Rechnungen</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </aside>
+    <!-- Unified Sidebar -->
+    <aside id="unified-sidebar"></aside>
 
-    <main class="main-content">
-        <header class="content-header">
-            <div class="header-content">
-                <h1 class="header-title">Preislisten</h1>
-                <p class="header-subtitle">Verwalten Sie Preise und Staffelpreise für Verträge</p>
-            </div>
-            <div class="header-actions">
-                <button class="btn btn-primary" onclick="openCreatePriceModal()">
-                    <span>➕</span> Neuer Preis
+    <!-- Main Content -->
+    <div id="main-content">
+        <!-- Content Header -->
+        <div class="content-header">
+            <h1>💵 Preise</h1>
+            <p>Verwaltung von Preislisten und Konditionen</p>
+        </div>
+
+        <!-- Page Content -->
+        <div class="container">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <button onclick="showCreateModal()">
+                    ➕ Neuer Preis
                 </button>
-            </div>
-        </header>
-
-        <section class="content-section">
-            <div class="filter-bar">
-                <div class="filter-group">
-                    <label for="filterContract">Vertrag:</label>
-                    <select id="filterContract" class="form-select" onchange="loadPrices()">
-                        <option value="">Alle Verträge</option>
+                <div class="filter-bar">
+                    <select id="categoryFilter" onchange="filterPrices()">
+                        <option value="">Alle Kategorien</option>
+                        <option value="service">Dienstleistungen</option>
+                        <option value="product">Produkte</option>
+                        <option value="license">Lizenzen</option>
+                        <option value="subscription">Abonnements</option>
                     </select>
-                </div>
-                <div class="filter-group">
-                    <label for="filterActive">Status:</label>
-                    <select id="filterActive" class="form-select" onchange="loadPrices()">
-                        <option value="">Alle</option>
-                        <option value="true" selected>Aktiv</option>
-                        <option value="false">Inaktiv</option>
+                    <select id="statusFilter" onchange="filterPrices()">
+                        <option value="">Alle Status</option>
+                        <option value="active">Aktiv</option>
+                        <option value="inactive">Inaktiv</option>
                     </select>
                 </div>
             </div>
-        </section>
 
-        <section class="content-section">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">💵</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Gesamt Preise</div>
-                        <div class="stat-value" id="statTotal">0</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">✅</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Aktive Preise</div>
-                        <div class="stat-value" id="statActive">0</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-content">
-                        <div class="stat-label">Mit Staffelpreisen</div>
-                        <div class="stat-value" id="statWithTiers">0</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Vertrag</th>
-                            <th>Kategorie</th>
-                            <th>Beschreibung</th>
-                            <th>Einheit</th>
-                            <th>Einzelpreis</th>
-                            <th>Gültig von</th>
-                            <th>Gültig bis</th>
-                            <th>Status</th>
-                            <th>Aktionen</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pricesTableBody">
-                        <tr>
-                            <td colspan="9" class="text-center">Lade Daten...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
-
-    <!-- Price Modal -->
-    <div id="priceModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="priceModalTitle">Neuer Preis</h2>
-                <button class="modal-close" onclick="closePriceModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="priceForm">
-                    <input type="hidden" id="priceId">
-                    
-                    <div class="form-group">
-                        <label for="priceContractId">Vertrag *</label>
-                        <select id="priceContractId" class="form-select" required>
-                            <option value="">Bitte wählen...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="serviceCategoryId">Kategorie</label>
-                        <select id="serviceCategoryId" class="form-select">
-                            <option value="">Bitte wählen...</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="priceDescription">Beschreibung *</label>
-                        <input type="text" id="priceDescription" class="form-input" required>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="priceUnit">Einheit *</label>
-                            <input type="text" id="priceUnit" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="unitPriceNet">Einzelpreis (netto) *</label>
-                            <input type="number" id="unitPriceNet" class="form-input" step="0.01" min="0" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="validFrom">Gültig von *</label>
-                            <input type="date" id="validFrom" class="form-input" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="validTo">Gültig bis</label>
-                            <input type="date" id="validTo" class="form-input">
-                        </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="isActive" checked> Aktiv
-                        </label>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closePriceModal()">Abbrechen</button>
-                <button type="button" class="btn btn-primary" onclick="savePrice()">Speichern</button>
+            <!-- Price Cards -->
+            <div class="price-cards" id="priceCards">
+                <!-- Prices will be loaded here -->
             </div>
         </div>
     </div>
 
+    <!-- Create/Edit Price Modal -->
+    <div id="priceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Neuer Preis</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="priceForm" onsubmit="savePrice(event)">
+                <input type="hidden" id="priceId">
+                
+                <div class="form-group">
+                    <label for="priceName">Bezeichnung *</label>
+                    <input type="text" id="priceName" required placeholder="z.B. Standard-Lizenz">
+                </div>
+                
+                <div class="form-group">
+                    <label for="priceDescription">Beschreibung</label>
+                    <textarea id="priceDescription" placeholder="Detaillierte Beschreibung..."></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="priceAmount">Preis (€) *</label>
+                        <input type="number" id="priceAmount" required step="0.01" min="0" placeholder="0.00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priceUnit">Einheit *</label>
+                        <select id="priceUnit" required>
+                            <option value="once">Einmalig</option>
+                            <option value="hour">pro Stunde</option>
+                            <option value="day">pro Tag</option>
+                            <option value="month">pro Monat</option>
+                            <option value="year">pro Jahr</option>
+                            <option value="piece">pro Stück</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="priceCategory">Kategorie *</label>
+                        <select id="priceCategory" required>
+                            <option value="service">Dienstleistung</option>
+                            <option value="product">Produkt</option>
+                            <option value="license">Lizenz</option>
+                            <option value="subscription">Abonnement</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priceVat">MwSt. (%)</label>
+                        <input type="number" id="priceVat" step="0.01" min="0" max="100" value="19">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="priceValidFrom">Gültig ab</label>
+                        <input type="date" id="priceValidFrom">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="priceValidTo">Gültig bis</label>
+                        <input type="date" id="priceValidTo">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="priceStatus">Status *</label>
+                    <select id="priceStatus" required>
+                        <option value="active">Aktiv</option>
+                        <option value="inactive">Inaktiv</option>
+                    </select>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Abbrechen</button>
+                    <button type="submit" class="btn-primary">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Unified Menu JS -->
     <script src="js/unified-menu.js"></script>
-    <script src="js/price-management.js"></script>
+    
+    <!-- Prices JS -->
+    <script>
+        // Sample prices data
+        let prices = [
+            {
+                id: 1,
+                name: 'Standard-Lizenz',
+                description: 'Basis-Lizenz für Einzelnutzer',
+                amount: 49.99,
+                unit: 'month',
+                category: 'license',
+                vat: 19,
+                status: 'active',
+                validFrom: '2025-01-01',
+                validTo: null
+            },
+            {
+                id: 2,
+                name: 'Premium-Lizenz',
+                description: 'Erweiterte Lizenz mit allen Features',
+                amount: 99.99,
+                unit: 'month',
+                category: 'license',
+                vat: 19,
+                status: 'active',
+                validFrom: '2025-01-01',
+                validTo: null
+            },
+            {
+                id: 3,
+                name: 'Beratungsstunde',
+                description: 'Professionelle Beratung durch Experten',
+                amount: 150.00,
+                unit: 'hour',
+                category: 'service',
+                vat: 19,
+                status: 'active',
+                validFrom: '2025-01-01',
+                validTo: null
+            },
+            {
+                id: 4,
+                name: 'Enterprise-Paket',
+                description: 'Vollständiges Enterprise-Paket',
+                amount: 4999.00,
+                unit: 'year',
+                category: 'subscription',
+                vat: 19,
+                status: 'active',
+                validFrom: '2025-01-01',
+                validTo: null
+            }
+        ];
+        
+        let nextId = 5;
+        let filteredPrices = [...prices];
+        
+        // Load prices on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            displayPrices();
+        });
+        
+        // Get unit label
+        function getUnitLabel(unit) {
+            const labels = {
+                'once': 'Einmalig',
+                'hour': 'pro Stunde',
+                'day': 'pro Tag',
+                'month': 'pro Monat',
+                'year': 'pro Jahr',
+                'piece': 'pro Stück'
+            };
+            return labels[unit] || unit;
+        }
+        
+        // Get category label
+        function getCategoryLabel(category) {
+            const labels = {
+                'service': 'Dienstleistung',
+                'product': 'Produkt',
+                'license': 'Lizenz',
+                'subscription': 'Abonnement'
+            };
+            return labels[category] || category;
+        }
+        
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: 'EUR'
+            }).format(amount);
+        }
+        
+        // Display prices
+        function displayPrices() {
+            const container = document.getElementById('priceCards');
+            
+            if (filteredPrices.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">💵</div>
+                        <h3>Keine Preise gefunden</h3>
+                        <p>Erstellen Sie einen neuen Preis oder passen Sie die Filter an.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredPrices.map(price => {
+                const grossAmount = price.amount * (1 + price.vat / 100);
+                
+                return `
+                    <div class="price-card">
+                        <div class="price-card-header">
+                            <div class="price-card-title">
+                                <h3>${price.name}</h3>
+                                <p>${getCategoryLabel(price.category)}</p>
+                            </div>
+                            <span class="price-badge badge-${price.status}">
+                                ${price.status === 'active' ? 'Aktiv' : 'Inaktiv'}
+                            </span>
+                        </div>
+                        
+                        <div class="price-amount">
+                            ${formatCurrency(price.amount)}
+                            <span class="price-unit">${getUnitLabel(price.unit)}</span>
+                        </div>
+                        
+                        <div class="price-details">
+                            <div class="price-detail-row">
+                                <span class="price-detail-label">Netto:</span>
+                                <span class="price-detail-value">${formatCurrency(price.amount)}</span>
+                            </div>
+                            <div class="price-detail-row">
+                                <span class="price-detail-label">MwSt. (${price.vat}%):</span>
+                                <span class="price-detail-value">${formatCurrency(price.amount * price.vat / 100)}</span>
+                            </div>
+                            <div class="price-detail-row">
+                                <span class="price-detail-label">Brutto:</span>
+                                <span class="price-detail-value">${formatCurrency(grossAmount)}</span>
+                            </div>
+                            ${price.validFrom ? `
+                            <div class="price-detail-row">
+                                <span class="price-detail-label">Gültig ab:</span>
+                                <span class="price-detail-value">${new Date(price.validFrom).toLocaleDateString('de-DE')}</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <p style="font-size: 14px; color: #64748b; margin: 10px 0;">
+                            ${price.description || 'Keine Beschreibung'}
+                        </p>
+                        
+                        <div class="price-actions">
+                            <button class="btn-edit" onclick="editPrice(${price.id})">
+                                ✏️ Bearbeiten
+                            </button>
+                            <button class="btn-delete" onclick="deletePrice(${price.id})">
+                                🗑️ Löschen
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Filter prices
+        function filterPrices() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            filteredPrices = prices.filter(price => {
+                const matchCategory = !categoryFilter || price.category === categoryFilter;
+                const matchStatus = !statusFilter || price.status === statusFilter;
+                return matchCategory && matchStatus;
+            });
+            
+            displayPrices();
+        }
+        
+        // Show create modal
+        function showCreateModal() {
+            document.getElementById('modalTitle').textContent = 'Neuer Preis';
+            document.getElementById('priceForm').reset();
+            document.getElementById('priceId').value = '';
+            document.getElementById('priceVat').value = '19';
+            document.getElementById('priceStatus').value = 'active';
+            document.getElementById('priceModal').classList.add('active');
+        }
+        
+        // Edit price
+        function editPrice(id) {
+            const price = prices.find(p => p.id === id);
+            if (!price) return;
+            
+            document.getElementById('modalTitle').textContent = 'Preis bearbeiten';
+            document.getElementById('priceId').value = price.id;
+            document.getElementById('priceName').value = price.name;
+            document.getElementById('priceDescription').value = price.description || '';
+            document.getElementById('priceAmount').value = price.amount;
+            document.getElementById('priceUnit').value = price.unit;
+            document.getElementById('priceCategory').value = price.category;
+            document.getElementById('priceVat').value = price.vat;
+            document.getElementById('priceValidFrom').value = price.validFrom || '';
+            document.getElementById('priceValidTo').value = price.validTo || '';
+            document.getElementById('priceStatus').value = price.status;
+            
+            document.getElementById('priceModal').classList.add('active');
+        }
+        
+        // Delete price
+        function deletePrice(id) {
+            if (!confirm('Möchten Sie diesen Preis wirklich löschen?')) {
+                return;
+            }
+            
+            prices = prices.filter(p => p.id !== id);
+            filterPrices();
+            alert('Preis erfolgreich gelöscht!');
+        }
+        
+        // Save price
+        function savePrice(event) {
+            event.preventDefault();
+            
+            const id = document.getElementById('priceId').value;
+            const price = {
+                name: document.getElementById('priceName').value,
+                description: document.getElementById('priceDescription').value,
+                amount: parseFloat(document.getElementById('priceAmount').value),
+                unit: document.getElementById('priceUnit').value,
+                category: document.getElementById('priceCategory').value,
+                vat: parseFloat(document.getElementById('priceVat').value),
+                validFrom: document.getElementById('priceValidFrom').value || null,
+                validTo: document.getElementById('priceValidTo').value || null,
+                status: document.getElementById('priceStatus').value
+            };
+            
+            if (id) {
+                // Update existing
+                const index = prices.findIndex(p => p.id === parseInt(id));
+                if (index !== -1) {
+                    prices[index] = { ...prices[index], ...price };
+                }
+            } else {
+                // Create new
+                price.id = nextId++;
+                prices.push(price);
+            }
+            
+            filterPrices();
+            closeModal();
+            alert('Preis erfolgreich gespeichert!');
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('priceModal').classList.remove('active');
+        }
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+        
+        // Close modal on outside click
+        document.getElementById('priceModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+    </script>
 </body>
 </html>
