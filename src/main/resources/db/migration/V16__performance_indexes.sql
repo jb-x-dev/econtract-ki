@@ -22,10 +22,6 @@ CREATE INDEX IF NOT EXISTS idx_invoices_due_date ON invoices(due_date);
 CREATE INDEX IF NOT EXISTS idx_invoices_contract_id ON invoices(contract_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_invoice_date ON invoices(invoice_date);
 
--- Partners table indexes
-CREATE INDEX IF NOT EXISTS idx_partners_name ON partners(name);
-CREATE INDEX IF NOT EXISTS idx_partners_partner_type ON partners(partner_type);
-
 -- Users table indexes
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
