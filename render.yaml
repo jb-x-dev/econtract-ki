@@ -42,5 +42,5 @@ databases:
   - name: econtract-db
     databaseName: econtract
     user: econtract_user
-    plan: free
+    plan: basic-256mb
     region: frankfurt
