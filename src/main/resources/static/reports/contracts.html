@@ -29,19 +29,407 @@
 
         <!-- Page Content -->
         <div class="page-content">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Vertragsberichte</h3>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Verträge Gesamt</div>
+                    <div class="stat-value" id="totalContracts">-</div>
+                    <div class="stat-change" id="totalChange">Lädt...</div>
                 </div>
-                <div class="card-body">
-                    <p>Hier finden Sie detaillierte Berichte über alle Verträge.</p>
-                    <p><em>Diese Seite wird gerade überarbeitet...</em></p>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Aktive Verträge</div>
+                    <div class="stat-value text-success" id="activeContracts">-</div>
+                    <div class="stat-change" id="activePercent">-</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">In Genehmigung</div>
+                    <div class="stat-value text-warning" id="approvalContracts">-</div>
+                    <div class="stat-change" id="approvalPercent">-</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Gesamtwert</div>
+                    <div class="stat-value text-primary" id="totalValue">-</div>
+                    <div class="stat-change positive" id="avgValue">-</div>
                 </div>
             </div>
+
+            <!-- Charts Row -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Verträge nach Status</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Verträge nach Typ</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="typeChart" style="max-height: 300px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contracts Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Alle Verträge</h3>
+                    <div style="display: flex; gap: 1rem;">
+                        <input type="text" id="searchInput" placeholder="Suche..." 
+                               style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px; width: 300px;">
+                        <select id="statusFilter" style="padding: 8px 12px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                            <option value="">Alle Status</option>
+                            <option value="ACTIVE">Aktiv</option>
+                            <option value="IN_APPROVAL">In Genehmigung</option>
+                            <option value="EXPIRED">Abgelaufen</option>
+                            <option value="TERMINATED">Gekündigt</option>
+                            <option value="DRAFT">Entwurf</option>
+                            <option value="IN_NEGOTIATION">In Verhandlung</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nr.</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Typ</th>
+                                <th>Status</th>
+                                <th>Wert</th>
+                                <th>Laufzeit</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractsTable">
+                            <tr>
+                                <td colspan="8" style="text-align: center; color: #9ca3af; padding: 2rem;">
+                                    Lade Vertragsdaten...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div id="pagination" style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
+                        <!-- Pagination buttons will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <!-- Unified Menu JS -->
     <script src="../js/unified-menu.js"></script>
+    
+    <!-- Contracts Report JS -->
+    <script>
+        let allContracts = [];
+        let filteredContracts = [];
+        let currentPage = 1;
+        const itemsPerPage = 20;
+
+        // Load Contract Data from API
+        async function loadContractData() {
+            try {
+                const response = await fetch('/econtract/api/v1/contracts?all=true');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                allContracts = await response.json();
+                filteredContracts = allContracts;
+                
+                updateStatistics();
+                createCharts();
+                renderTable();
+                
+            } catch (error) {
+                console.error('Error loading contract data:', error);
+                document.getElementById('contractsTable').innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: #ef4444; padding: 2rem;">
+                            ⚠️ Fehler beim Laden der Daten: ${error.message}<br>
+                            <small>Bitte stellen Sie sicher, dass die API erreichbar ist.</small>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Update Statistics
+        function updateStatistics() {
+            const total = allContracts.length;
+            const active = allContracts.filter(c => c.status === 'ACTIVE').length;
+            const inApproval = allContracts.filter(c => c.status === 'IN_APPROVAL').length;
+            const totalValue = allContracts.reduce((sum, c) => sum + (c.contractValue || 0), 0);
+            const avgValue = total > 0 ? totalValue / total : 0;
+
+            document.getElementById('totalContracts').textContent = total;
+            document.getElementById('activeContracts').textContent = active;
+            document.getElementById('approvalContracts').textContent = inApproval;
+            
+            document.getElementById('totalValue').textContent = formatCurrency(totalValue);
+            document.getElementById('avgValue').textContent = `Ø ${formatCurrency(avgValue)}`;
+            
+            const activePercent = total > 0 ? ((active / total) * 100).toFixed(1) : 0;
+            const approvalPercent = total > 0 ? ((inApproval / total) * 100).toFixed(1) : 0;
+            
+            document.getElementById('activePercent').textContent = `${activePercent}% aller Verträge`;
+            document.getElementById('approvalPercent').textContent = `${approvalPercent}% aller Verträge`;
+            document.getElementById('totalChange').textContent = `${total} Verträge erfasst`;
+        }
+
+        // Create Charts
+        function createCharts() {
+            createStatusChart();
+            createTypeChart();
+        }
+
+        // Create Status Chart
+        function createStatusChart() {
+            const statusCounts = {
+                'ACTIVE': 0,
+                'IN_APPROVAL': 0,
+                'EXPIRED': 0,
+                'TERMINATED': 0,
+                'DRAFT': 0,
+                'IN_NEGOTIATION': 0
+            };
+
+            allContracts.forEach(c => {
+                if (statusCounts.hasOwnProperty(c.status)) {
+                    statusCounts[c.status]++;
+                }
+            });
+
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aktiv', 'In Genehmigung', 'Abgelaufen', 'Gekündigt', 'Entwurf', 'In Verhandlung'],
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: [
+                            '#10b981', // Active - Green
+                            '#f59e0b', // In Approval - Orange
+                            '#ef4444', // Expired - Red
+                            '#6b7280', // Terminated - Gray
+                            '#3b82f6', // Draft - Blue
+                            '#8b5cf6'  // In Negotiation - Purple
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Create Type Chart
+        function createTypeChart() {
+            const typeCounts = {};
+            allContracts.forEach(c => {
+                const type = c.contractType || 'Sonstige';
+                typeCounts[type] = (typeCounts[type] || 0) + 1;
+            });
+
+            // Sort by count and take top 10
+            const sortedTypes = Object.entries(typeCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const ctx = document.getElementById('typeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedTypes.map(t => t[0]),
+                    datasets: [{
+                        label: 'Anzahl Verträge',
+                        data: sortedTypes.map(t => t[1]),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Table
+        function renderTable() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageContracts = filteredContracts.slice(start, end);
+
+            const tbody = document.getElementById('contractsTable');
+            
+            if (pageContracts.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: #9ca3af; padding: 2rem;">
+                            Keine Verträge gefunden.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = pageContracts.map(contract => {
+                const statusBadge = getStatusBadge(contract.status);
+                const value = formatCurrency(contract.contractValue || 0);
+                const duration = formatDuration(contract.startDate, contract.endDate);
+
+                return `
+                    <tr>
+                        <td><strong>${contract.contractNumber || '-'}</strong></td>
+                        <td>${contract.title || '-'}</td>
+                        <td>${contract.partnerName || '-'}</td>
+                        <td><span class="badge badge-secondary">${contract.contractType || '-'}</span></td>
+                        <td>${statusBadge}</td>
+                        <td>${value}</td>
+                        <td>${duration}</td>
+                        <td>
+                            <a href="../contract-view.html?id=${contract.id}" class="btn btn-sm btn-primary">
+                                Anzeigen
+                            </a>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            renderPagination();
+        }
+
+        // Render Pagination
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredContracts.length / itemsPerPage);
+            const pagination = document.getElementById('pagination');
+
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Previous button
+            html += `<button onclick="changePage(${currentPage - 1})" 
+                     ${currentPage === 1 ? 'disabled' : ''} 
+                     class="btn btn-sm btn-secondary">← Zurück</button>`;
+
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    html += `<button onclick="changePage(${i})" 
+                             class="btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-secondary'}">${i}</button>`;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    html += '<span style="padding: 0 0.5rem;">...</span>';
+                }
+            }
+
+            // Next button
+            html += `<button onclick="changePage(${currentPage + 1})" 
+                     ${currentPage === totalPages ? 'disabled' : ''} 
+                     class="btn btn-sm btn-secondary">Weiter →</button>`;
+
+            pagination.innerHTML = html;
+        }
+
+        // Change Page
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredContracts.length / itemsPerPage);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable();
+        }
+
+        // Filter Contracts
+        function filterContracts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+
+            filteredContracts = allContracts.filter(contract => {
+                const matchesSearch = !searchTerm || 
+                    (contract.title && contract.title.toLowerCase().includes(searchTerm)) ||
+                    (contract.contractNumber && contract.contractNumber.toLowerCase().includes(searchTerm)) ||
+                    (contract.partnerName && contract.partnerName.toLowerCase().includes(searchTerm));
+
+                const matchesStatus = !statusFilter || contract.status === statusFilter;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        // Helper Functions
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function formatDuration(startDate, endDate) {
+            if (!startDate || !endDate) return '-';
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            return `${start.toLocaleDateString('de-DE')} - ${end.toLocaleDateString('de-DE')}`;
+        }
+
+        function getStatusBadge(status) {
+            const statusConfig = {
+                'ACTIVE': { label: 'Aktiv', class: 'success' },
+                'IN_APPROVAL': { label: 'In Genehmigung', class: 'warning' },
+                'EXPIRED': { label: 'Abgelaufen', class: 'danger' },
+                'TERMINATED': { label: 'Gekündigt', class: 'secondary' },
+                'DRAFT': { label: 'Entwurf', class: 'info' },
+                'IN_NEGOTIATION': { label: 'In Verhandlung', class: 'primary' }
+            };
+
+            const config = statusConfig[status] || { label: status, class: 'secondary' };
+            return `<span class="badge badge-${config.class}">${config.label}</span>`;
+        }
+
+        // Event Listeners
+        document.getElementById('searchInput').addEventListener('input', filterContracts);
+        document.getElementById('statusFilter').addEventListener('change', filterContracts);
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadContractData();
+        });
+    </script>
 </body>
 </html>
