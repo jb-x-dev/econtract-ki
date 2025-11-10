@@ -188,6 +188,12 @@ const UnifiedMenu = {
                     <span class="sidebar-icon">📚</span>
                     <span class="sidebar-title">API Dokumentation</span>
                 </a>
+                <form action="/econtract/logout" method="post" style="margin: 0;">
+                    <button type="submit" class="sidebar-link" style="width: 100%; text-align: left; background: none; border: none; cursor: pointer; padding: 0.75rem 1rem; color: inherit; font-size: inherit;">
+                        <span class="sidebar-icon">🚪</span>
+                        <span class="sidebar-title">Abmelden</span>
+                    </button>
+                </form>
                 <div class="sidebar-version">Version 5.0</div>
             </div>
         `;
@@ -210,7 +216,8 @@ const UnifiedMenu = {
             document.querySelectorAll('.sidebar-submenu.open').forEach(sm => {
                 if (sm !== submenu) {
                     sm.classList.remove('open');
-                    sm.parentElement.querySelector('.submenu-arrow').style.transform = 'rotate(0deg)';
+                    const otherArrow = sm.parentElement.querySelector('.submenu-arrow');
+                    if (otherArrow) otherArrow.style.transform = 'rotate(0deg)';
                 }
             });
 
@@ -220,6 +227,18 @@ const UnifiedMenu = {
                 arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
             }
         }
+    },
+    
+    // Setup event listeners after menu is rendered
+    setupEventListeners() {
+        // Submenu triggers
+        document.querySelectorAll('.submenu-trigger').forEach(trigger => {
+            trigger.addEventListener('click', (e) => {
+                e.preventDefault();
+                const itemId = trigger.closest('.sidebar-item').dataset.id;
+                UnifiedMenu.toggleSubmenu(itemId);
+            });
+        });
     },
 
     // Sidebar toggle (mobile)
@@ -258,10 +277,12 @@ const UnifiedMenu = {
             document.addEventListener('DOMContentLoaded', () => {
                 this.removeOldMenu();
                 this.render();
+                this.setupEventListeners();
             });
         } else {
             this.removeOldMenu();
             this.render();
+            this.setupEventListeners();
         }
     },
 
