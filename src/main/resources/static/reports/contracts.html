@@ -140,10 +140,26 @@
         // Load Contract Data from API
         async function loadContractData() {
             try {
-                const response = await fetch('/econtract/api/v1/contracts?all=true');
+                const response = await fetch('/econtract/api/v1/contracts?all=true', {
+                    credentials: 'include' // Include session cookie
+                });
+                
+                // Check if redirected to login
+                if (response.redirected || response.url.includes('login')) {
+                    showLoginRequired();
+                    return;
+                }
+                
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    showLoginRequired();
+                    return;
+                }
+                
                 allContracts = await response.json();
                 filteredContracts = allContracts;
                 
@@ -153,15 +169,44 @@
                 
             } catch (error) {
                 console.error('Error loading contract data:', error);
-                document.getElementById('contractsTable').innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align: center; color: #ef4444; padding: 2rem;">
-                            ⚠️ Fehler beim Laden der Daten: ${error.message}<br>
-                            <small>Bitte stellen Sie sicher, dass die API erreichbar ist.</small>
-                        </td>
-                    </tr>
-                `;
+                showError(error.message);
             }
+        }
+        
+        // Show login required message
+        function showLoginRequired() {
+            document.getElementById('contractsTable').innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                        <h3 style="color: #1f2937; margin-bottom: 0.5rem;">Anmeldung erforderlich</h3>
+                        <p style="color: #6b7280; margin-bottom: 1.5rem;">
+                            Bitte melden Sie sich an, um die Vertragsdaten zu sehen.
+                        </p>
+                        <a href="../login.html" class="btn btn-primary" style="text-decoration: none;">
+                            Zur Anmeldung →
+                        </a>
+                    </td>
+                </tr>
+            `;
+            // Hide stats and charts
+            document.querySelectorAll('.stats-grid, .card').forEach(el => {
+                if (!el.querySelector('#contractsTable')) {
+                    el.style.display = 'none';
+                }
+            });
+        }
+        
+        // Show error message
+        function showError(message) {
+            document.getElementById('contractsTable').innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color: #ef4444; padding: 2rem;">
+                        ⚠️ Fehler beim Laden der Daten: ${message}<br>
+                        <small>Bitte versuchen Sie es später erneut oder kontaktieren Sie den Support.</small>
+                    </td>
+                </tr>
+            `;
         }
 
         // Update Statistics

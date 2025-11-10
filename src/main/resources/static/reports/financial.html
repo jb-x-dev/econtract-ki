@@ -139,8 +139,22 @@
         // Load Financial Data
         async function loadFinancialData() {
             try {
-                const response = await fetch('/econtract/api/v1/contracts?all=true');
+                const response = await fetch('/econtract/api/v1/contracts?all=true', {
+                    credentials: 'include'
+                });
+                
+                if (response.redirected || response.url.includes('login')) {
+                    showLoginRequired();
+                    return;
+                }
+                
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    showLoginRequired();
+                    return;
+                }
                 
                 contracts = await response.json();
                 
@@ -152,6 +166,22 @@
                 console.error('Error loading financial data:', error);
                 showError(error.message);
             }
+        }
+        
+        function showLoginRequired() {
+            document.getElementById('financialTable').innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 3rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+                        <h3 style="color: #1f2937; margin-bottom: 0.5rem;">Anmeldung erforderlich</h3>
+                        <p style="color: #6b7280; margin-bottom: 1.5rem;">Bitte melden Sie sich an.</p>
+                        <a href="../login.html" class="btn btn-primary" style="text-decoration: none;">Zur Anmeldung →</a>
+                    </td>
+                </tr>
+            `;
+            document.querySelectorAll('.stats-grid, .card').forEach(el => {
+                if (!el.querySelector('#financialTable')) el.style.display = 'none';
+            });
         }
 
         // Update Statistics
