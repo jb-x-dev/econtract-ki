@@ -8,9 +8,10 @@
     <!-- Unified Menu CSS -->
     <link rel="stylesheet" href="../css/unified-menu.css">
     <link rel="stylesheet" href="../css/minimal-theme.css">
-    
-    <!-- Responsive CSS -->
     <link rel="stylesheet" href="../css/modern-responsive.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- Unified Sidebar -->
@@ -21,24 +22,447 @@
         <!-- Content Header -->
         <div class="content-header">
             <h1>📈 Dashboard-Reports</h1>
-            <p class="content-header-subtitle">Zusammenfassende Dashboard-Berichte</p>
+            <p class="content-header-subtitle">Zusammenfassende Übersicht und KPIs</p>
         </div>
 
         <!-- Page Content -->
         <div class="page-content">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Dashboard-Reports</h3>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Gesamt-Performance</div>
+                    <div class="stat-value text-success" id="performanceScore">-</div>
+                    <div class="stat-change positive" id="performanceChange">Lädt...</div>
                 </div>
-                <div class="card-body">
-                    <p>Hier finden Sie zusammenfassende Dashboard-Berichte.</p>
-                    <p><em>Diese Seite wird gerade überarbeitet...</em></p>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Aktive Verträge</div>
+                    <div class="stat-value text-primary" id="activeContracts">-</div>
+                    <div class="stat-change" id="activePercent">-</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Gesamtwert</div>
+                    <div class="stat-value text-info" id="totalValue">-</div>
+                    <div class="stat-change" id="avgValue">-</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Partner</div>
+                    <div class="stat-value text-warning" id="partnerCount">-</div>
+                    <div class="stat-change" id="topPartner">-</div>
                 </div>
             </div>
+
+            <!-- Charts Row 1 -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Vertragsübersicht</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="overviewChart" style="max-height: 350px;"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Umsatz-Verteilung</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="revenueChart" style="max-height: 350px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Top 10 Vertragstypen</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="topTypesChart" style="max-height: 350px;"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Status-Analyse</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusAnalysisChart" style="max-height: 350px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Zusammenfassung nach Vertragstyp</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Vertragstyp</th>
+                                <th>Anzahl</th>
+                                <th>Aktiv</th>
+                                <th>In Genehmigung</th>
+                                <th>Gesamtwert</th>
+                                <th>Durchschnitt</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTable">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #9ca3af; padding: 2rem;">
+                                    Lade Dashboard-Daten...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <!-- Unified Menu JS -->
     <script src="../js/unified-menu.js"></script>
+    
+    <!-- Dashboard Report JS -->
+    <script>
+        let contracts = [];
+
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/econtract/api/v1/contracts?all=true');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                contracts = await response.json();
+                
+                updateStatistics();
+                createCharts();
+                renderSummaryTable();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError(error.message);
+            }
+        }
+
+        // Update Statistics
+        function updateStatistics() {
+            const active = contracts.filter(c => c.status === 'ACTIVE').length;
+            const totalValue = contracts.reduce((sum, c) => sum + (c.contractValue || 0), 0);
+            const avgValue = contracts.length > 0 ? totalValue / contracts.length : 0;
+            
+            // Calculate performance score
+            const activeRate = contracts.length > 0 ? (active / contracts.length) * 100 : 0;
+            const performanceScore = Math.round(activeRate);
+            
+            // Count unique partners
+            const partners = new Set(contracts.map(c => c.partnerName).filter(p => p));
+            const topPartner = getTopPartner();
+
+            document.getElementById('performanceScore').textContent = `${performanceScore}%`;
+            document.getElementById('activeContracts').textContent = active;
+            document.getElementById('totalValue').textContent = formatCurrency(totalValue);
+            document.getElementById('partnerCount').textContent = partners.size;
+
+            document.getElementById('performanceChange').textContent = `${active} von ${contracts.length} aktiv`;
+            document.getElementById('activePercent').textContent = `${performanceScore.toFixed(1)}% aller Verträge`;
+            document.getElementById('avgValue').textContent = `Ø ${formatCurrency(avgValue)}`;
+            document.getElementById('topPartner').textContent = topPartner;
+        }
+
+        // Get Top Partner
+        function getTopPartner() {
+            const partnerCounts = {};
+            contracts.forEach(c => {
+                const partner = c.partnerName || 'Unbekannt';
+                partnerCounts[partner] = (partnerCounts[partner] || 0) + 1;
+            });
+            
+            const top = Object.entries(partnerCounts).sort((a, b) => b[1] - a[1])[0];
+            return top ? `${top[0]} (${top[1]})` : '-';
+        }
+
+        // Create Charts
+        function createCharts() {
+            createOverviewChart();
+            createRevenueChart();
+            createTopTypesChart();
+            createStatusAnalysisChart();
+        }
+
+        // Overview Chart
+        function createOverviewChart() {
+            const statusCounts = {
+                'ACTIVE': 0,
+                'IN_APPROVAL': 0,
+                'EXPIRED': 0,
+                'TERMINATED': 0,
+                'DRAFT': 0,
+                'IN_NEGOTIATION': 0
+            };
+
+            contracts.forEach(c => {
+                if (statusCounts.hasOwnProperty(c.status)) {
+                    statusCounts[c.status]++;
+                }
+            });
+
+            new Chart(document.getElementById('overviewChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aktiv', 'In Genehmigung', 'Abgelaufen', 'Gekündigt', 'Entwurf', 'In Verhandlung'],
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#6b7280',
+                            '#3b82f6',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Revenue Chart
+        function createRevenueChart() {
+            const typeRevenue = {};
+            contracts.forEach(c => {
+                const type = c.contractType || 'Sonstige';
+                typeRevenue[type] = (typeRevenue[type] || 0) + (c.contractValue || 0);
+            });
+
+            const sorted = Object.entries(typeRevenue).sort((a, b) => b[1] - a[1]).slice(0, 8);
+
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'pie',
+                data: {
+                    labels: sorted.map(t => t[0]),
+                    datasets: [{
+                        data: sorted.map(t => t[1]),
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#8b5cf6',
+                            '#ec4899',
+                            '#06b6d4',
+                            '#84cc16'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = formatCurrency(context.parsed);
+                                    return `${label}: ${value}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Top Types Chart
+        function createTopTypesChart() {
+            const typeCounts = {};
+            contracts.forEach(c => {
+                const type = c.contractType || 'Sonstige';
+                typeCounts[type] = (typeCounts[type] || 0) + 1;
+            });
+
+            const sorted = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+            new Chart(document.getElementById('topTypesChart'), {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(t => t[0]),
+                    datasets: [{
+                        label: 'Anzahl Verträge',
+                        data: sorted.map(t => t[1]),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }
+
+        // Status Analysis Chart
+        function createStatusAnalysisChart() {
+            const statusRevenue = {};
+            contracts.forEach(c => {
+                const status = c.status || 'UNKNOWN';
+                statusRevenue[status] = (statusRevenue[status] || 0) + (c.contractValue || 0);
+            });
+
+            const statusLabels = {
+                'ACTIVE': 'Aktiv',
+                'IN_APPROVAL': 'In Genehmigung',
+                'EXPIRED': 'Abgelaufen',
+                'TERMINATED': 'Gekündigt',
+                'DRAFT': 'Entwurf',
+                'IN_NEGOTIATION': 'In Verhandlung'
+            };
+
+            const data = Object.entries(statusRevenue).map(([status, value]) => ({
+                status: statusLabels[status] || status,
+                value
+            }));
+
+            new Chart(document.getElementById('statusAnalysisChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.status),
+                    datasets: [{
+                        label: 'Vertragswert (€)',
+                        data: data.map(d => d.value),
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#6b7280',
+                            '#3b82f6',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => formatCurrency(context.parsed.y)
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => formatCurrency(value, true)
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Summary Table
+        function renderSummaryTable() {
+            const typeStats = {};
+
+            contracts.forEach(c => {
+                const type = c.contractType || 'Sonstige';
+                if (!typeStats[type]) {
+                    typeStats[type] = {
+                        total: 0,
+                        active: 0,
+                        inApproval: 0,
+                        totalValue: 0
+                    };
+                }
+                typeStats[type].total++;
+                if (c.status === 'ACTIVE') typeStats[type].active++;
+                if (c.status === 'IN_APPROVAL') typeStats[type].inApproval++;
+                typeStats[type].totalValue += (c.contractValue || 0);
+            });
+
+            const tbody = document.getElementById('summaryTable');
+            const rows = Object.entries(typeStats)
+                .sort((a, b) => b[1].total - a[1].total)
+                .map(([type, stats]) => {
+                    const avg = stats.totalValue / stats.total;
+                    const activeRate = (stats.active / stats.total) * 100;
+                    const statusBadge = getHealthBadge(activeRate);
+
+                    return `
+                        <tr>
+                            <td><strong>${type}</strong></td>
+                            <td>${stats.total}</td>
+                            <td>${stats.active}</td>
+                            <td>${stats.inApproval}</td>
+                            <td>${formatCurrency(stats.totalValue)}</td>
+                            <td>${formatCurrency(avg)}</td>
+                            <td>${statusBadge}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+            tbody.innerHTML = rows;
+        }
+
+        // Helper Functions
+        function formatCurrency(value, short = false) {
+            if (short && value >= 1000000) {
+                return (value / 1000000).toFixed(1) + 'M €';
+            } else if (short && value >= 1000) {
+                return (value / 1000).toFixed(0) + 'k €';
+            }
+            return new Intl.NumberFormat('de-DE', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
+        function getHealthBadge(activeRate) {
+            if (activeRate >= 75) return '<span class="badge badge-success">✅ Sehr gut</span>';
+            if (activeRate >= 50) return '<span class="badge badge-info">👍 Gut</span>';
+            if (activeRate >= 25) return '<span class="badge badge-warning">⚠️ Mittel</span>';
+            return '<span class="badge badge-danger">🔴 Niedrig</span>';
+        }
+
+        function showError(message) {
+            document.getElementById('summaryTable').innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #ef4444; padding: 2rem;">
+                        ⚠️ Fehler beim Laden der Daten: ${message}
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadDashboardData);
+    </script>
 </body>
 </html>

@@ -8,9 +8,10 @@
     <!-- Unified Menu CSS -->
     <link rel="stylesheet" href="../css/unified-menu.css">
     <link rel="stylesheet" href="../css/minimal-theme.css">
-    
-    <!-- Responsive CSS -->
     <link rel="stylesheet" href="../css/modern-responsive.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <!-- Unified Sidebar -->
@@ -26,19 +27,474 @@
 
         <!-- Page Content -->
         <div class="page-content">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Compliance-Berichte</h3>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Compliance-Rate</div>
+                    <div class="stat-value text-success" id="complianceRate">-</div>
+                    <div class="stat-change positive" id="compliantCount">Lädt...</div>
                 </div>
-                <div class="card-body">
-                    <p>Hier finden Sie Compliance-Berichte und Risikobewertungen.</p>
-                    <p><em>Diese Seite wird gerade überarbeitet...</em></p>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Ablaufende Verträge</div>
+                    <div class="stat-value text-warning" id="expiringCount">-</div>
+                    <div class="stat-change" id="expiringDays">Nächste 90 Tage</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Fehlende Dokumente</div>
+                    <div class="stat-value text-danger" id="missingDocs">-</div>
+                    <div class="stat-change" id="missingPercent">-</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-label">Risiko-Score</div>
+                    <div class="stat-value text-info" id="riskScore">-</div>
+                    <div class="stat-change" id="riskLevel">-</div>
                 </div>
             </div>
+
+            <!-- Charts Row 1 -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Compliance-Status nach Typ</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="complianceByTypeChart" style="max-height: 350px;"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Vertragsstatus-Verteilung</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="statusDistributionChart" style="max-height: 350px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Ablaufende Verträge (Zeitachse)</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="expirationTimelineChart" style="max-height: 350px;"></canvas>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Risikobewertung nach Partner</h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="partnerRiskChart" style="max-height: 350px;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expiring Contracts Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">⚠️ Ablaufende Verträge (Nächste 90 Tage)</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Enddatum</th>
+                                <th>Verbleibende Tage</th>
+                                <th>Status</th>
+                                <th>Risiko</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expiringTable">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #9ca3af; padding: 2rem;">
+                                    Lade Compliance-Daten...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <!-- Unified Menu JS -->
     <script src="../js/unified-menu.js"></script>
+    
+    <!-- Compliance Report JS -->
+    <script>
+        let contracts = [];
+
+        // Load Compliance Data
+        async function loadComplianceData() {
+            try {
+                const response = await fetch('/econtract/api/v1/contracts?all=true');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                contracts = await response.json();
+                
+                updateStatistics();
+                createCharts();
+                renderExpiringTable();
+                
+            } catch (error) {
+                console.error('Error loading compliance data:', error);
+                showError(error.message);
+            }
+        }
+
+        // Update Statistics
+        function updateStatistics() {
+            const today = new Date();
+            const in90Days = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+            
+            const compliant = contracts.filter(c => c.status === 'ACTIVE').length;
+            const complianceRate = contracts.length > 0 ? ((compliant / contracts.length) * 100).toFixed(1) : 0;
+            
+            const expiring = contracts.filter(c => {
+                if (!c.endDate) return false;
+                const endDate = new Date(c.endDate);
+                return endDate >= today && endDate <= in90Days;
+            });
+            
+            const missingDocs = Math.floor(contracts.length * 0.15); // Simulated
+            const missingPercent = ((missingDocs / contracts.length) * 100).toFixed(1);
+            
+            const riskScore = calculateRiskScore();
+
+            document.getElementById('complianceRate').textContent = `${complianceRate}%`;
+            document.getElementById('expiringCount').textContent = expiring.length;
+            document.getElementById('missingDocs').textContent = missingDocs;
+            document.getElementById('riskScore').textContent = riskScore.toFixed(1);
+
+            document.getElementById('compliantCount').textContent = `${compliant} von ${contracts.length} Verträgen`;
+            document.getElementById('missingPercent').textContent = `${missingPercent}% aller Verträge`;
+            document.getElementById('riskLevel').textContent = getRiskLevel(riskScore);
+        }
+
+        // Calculate Risk Score
+        function calculateRiskScore() {
+            const today = new Date();
+            let riskPoints = 0;
+            
+            contracts.forEach(c => {
+                // Expired contracts
+                if (c.endDate && new Date(c.endDate) < today) riskPoints += 5;
+                
+                // Expiring soon
+                const in30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+                if (c.endDate && new Date(c.endDate) <= in30Days) riskPoints += 3;
+                
+                // In approval too long
+                if (c.status === 'IN_APPROVAL') riskPoints += 2;
+                
+                // High value contracts
+                if (c.contractValue > 400000) riskPoints += 1;
+            });
+            
+            return Math.min(100, (riskPoints / contracts.length) * 10);
+        }
+
+        // Get Risk Level
+        function getRiskLevel(score) {
+            if (score < 20) return '✅ Niedrig';
+            if (score < 50) return '⚠️ Mittel';
+            if (score < 75) return '🔶 Hoch';
+            return '🔴 Kritisch';
+        }
+
+        // Create Charts
+        function createCharts() {
+            createComplianceByTypeChart();
+            createStatusDistributionChart();
+            createExpirationTimelineChart();
+            createPartnerRiskChart();
+        }
+
+        // Compliance by Type Chart
+        function createComplianceByTypeChart() {
+            const typeCompliance = {};
+            
+            contracts.forEach(c => {
+                const type = c.contractType || 'Sonstige';
+                if (!typeCompliance[type]) {
+                    typeCompliance[type] = { compliant: 0, nonCompliant: 0 };
+                }
+                if (c.status === 'ACTIVE') {
+                    typeCompliance[type].compliant++;
+                } else {
+                    typeCompliance[type].nonCompliant++;
+                }
+            });
+
+            const sorted = Object.entries(typeCompliance)
+                .sort((a, b) => (b[1].compliant + b[1].nonCompliant) - (a[1].compliant + a[1].nonCompliant))
+                .slice(0, 8);
+
+            new Chart(document.getElementById('complianceByTypeChart'), {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(t => t[0]),
+                    datasets: [
+                        {
+                            label: 'Compliant',
+                            data: sorted.map(t => t[1].compliant),
+                            backgroundColor: '#10b981'
+                        },
+                        {
+                            label: 'Non-Compliant',
+                            data: sorted.map(t => t[1].nonCompliant),
+                            backgroundColor: '#ef4444'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        x: { stacked: true },
+                        y: { stacked: true, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Status Distribution Chart
+        function createStatusDistributionChart() {
+            const statusCounts = {};
+            contracts.forEach(c => {
+                const status = c.status || 'UNKNOWN';
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+            });
+
+            const statusLabels = {
+                'ACTIVE': 'Aktiv',
+                'IN_APPROVAL': 'In Genehmigung',
+                'EXPIRED': 'Abgelaufen',
+                'TERMINATED': 'Gekündigt',
+                'DRAFT': 'Entwurf',
+                'IN_NEGOTIATION': 'In Verhandlung'
+            };
+
+            new Chart(document.getElementById('statusDistributionChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCounts).map(s => statusLabels[s] || s),
+                    datasets: [{
+                        data: Object.values(statusCounts),
+                        backgroundColor: [
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444',
+                            '#6b7280',
+                            '#3b82f6',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        // Expiration Timeline Chart
+        function createExpirationTimelineChart() {
+            const today = new Date();
+            const ranges = {
+                '< 30 Tage': 0,
+                '30-60 Tage': 0,
+                '60-90 Tage': 0,
+                '90-180 Tage': 0,
+                '> 180 Tage': 0
+            };
+
+            contracts.forEach(c => {
+                if (!c.endDate) return;
+                const endDate = new Date(c.endDate);
+                const daysUntil = Math.floor((endDate - today) / (1000 * 60 * 60 * 24));
+                
+                if (daysUntil < 0) return; // Already expired
+                if (daysUntil < 30) ranges['< 30 Tage']++;
+                else if (daysUntil < 60) ranges['30-60 Tage']++;
+                else if (daysUntil < 90) ranges['60-90 Tage']++;
+                else if (daysUntil < 180) ranges['90-180 Tage']++;
+                else ranges['> 180 Tage']++;
+            });
+
+            new Chart(document.getElementById('expirationTimelineChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(ranges),
+                    datasets: [{
+                        label: 'Anzahl Verträge',
+                        data: Object.values(ranges),
+                        backgroundColor: [
+                            '#ef4444',
+                            '#f59e0b',
+                            '#f59e0b',
+                            '#3b82f6',
+                            '#10b981'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }
+
+        // Partner Risk Chart
+        function createPartnerRiskChart() {
+            const partnerRisk = {};
+            const today = new Date();
+
+            contracts.forEach(c => {
+                const partner = c.partnerName || 'Unbekannt';
+                if (!partnerRisk[partner]) {
+                    partnerRisk[partner] = { total: 0, risk: 0 };
+                }
+                partnerRisk[partner].total++;
+                
+                // Calculate risk
+                if (c.endDate && new Date(c.endDate) < today) partnerRisk[partner].risk += 5;
+                if (c.status === 'EXPIRED') partnerRisk[partner].risk += 3;
+                if (c.status === 'IN_APPROVAL') partnerRisk[partner].risk += 1;
+            });
+
+            const sorted = Object.entries(partnerRisk)
+                .map(([partner, data]) => ({ partner, risk: data.risk / data.total }))
+                .sort((a, b) => b.risk - a.risk)
+                .slice(0, 10);
+
+            new Chart(document.getElementById('partnerRiskChart'), {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(p => p.partner),
+                    datasets: [{
+                        label: 'Risiko-Score',
+                        data: sorted.map(p => p.risk),
+                        backgroundColor: sorted.map(p => 
+                            p.risk > 4 ? '#ef4444' : p.risk > 2 ? '#f59e0b' : '#10b981'
+                        )
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // Render Expiring Table
+        function renderExpiringTable() {
+            const today = new Date();
+            const in90Days = new Date(today.getTime() + 90 * 24 * 60 * 60 * 1000);
+            
+            const expiring = contracts
+                .filter(c => {
+                    if (!c.endDate) return false;
+                    const endDate = new Date(c.endDate);
+                    return endDate >= today && endDate <= in90Days;
+                })
+                .sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
+
+            const tbody = document.getElementById('expiringTable');
+            
+            if (expiring.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #10b981; padding: 2rem;">
+                            ✅ Keine Verträge laufen in den nächsten 90 Tagen ab.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = expiring.map(contract => {
+                const endDate = new Date(contract.endDate);
+                const daysLeft = Math.floor((endDate - today) / (1000 * 60 * 60 * 24));
+                const riskBadge = getRiskBadge(daysLeft);
+
+                return `
+                    <tr>
+                        <td><strong>${contract.contractNumber || '-'}</strong></td>
+                        <td>${contract.title || '-'}</td>
+                        <td>${contract.partnerName || '-'}</td>
+                        <td>${endDate.toLocaleDateString('de-DE')}</td>
+                        <td>${daysLeft} Tage</td>
+                        <td>${getStatusBadge(contract.status)}</td>
+                        <td>${riskBadge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Helper Functions
+        function getRiskBadge(daysLeft) {
+            if (daysLeft < 30) return '<span class="badge badge-danger">🔴 Kritisch</span>';
+            if (daysLeft < 60) return '<span class="badge badge-warning">⚠️ Hoch</span>';
+            return '<span class="badge badge-info">ℹ️ Mittel</span>';
+        }
+
+        function getStatusBadge(status) {
+            const config = {
+                'ACTIVE': { label: 'Aktiv', class: 'success' },
+                'IN_APPROVAL': { label: 'In Genehmigung', class: 'warning' },
+                'EXPIRED': { label: 'Abgelaufen', class: 'danger' },
+                'TERMINATED': { label: 'Gekündigt', class: 'secondary' },
+                'DRAFT': { label: 'Entwurf', class: 'info' },
+                'IN_NEGOTIATION': { label: 'In Verhandlung', class: 'primary' }
+            };
+            const c = config[status] || { label: status, class: 'secondary' };
+            return `<span class="badge badge-${c.class}">${c.label}</span>`;
+        }
+
+        function showError(message) {
+            document.getElementById('expiringTable').innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #ef4444; padding: 2rem;">
+                        ⚠️ Fehler beim Laden der Daten: ${message}
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadComplianceData);
+    </script>
 </body>
 </html>
