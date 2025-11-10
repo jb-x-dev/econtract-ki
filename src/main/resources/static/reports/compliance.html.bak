@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benutzerverwaltung - eContract KI</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/navigation.css">
+    <style>
+        .user-table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .user-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .user-table th {
+            background: #f8fafc;
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #1e40af;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .user-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .user-table tr:hover {
+            background: #f8fafc;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+        .user-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .user-role {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .action-buttons button {
+            padding: 6px 12px;
+            margin: 0 4px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+        .btn-reset {
+            background: #f59e0b;
+            color: white;
+        }
+        .btn-reset:hover {
+            background: #d97706;
+        }
+        .add-user-btn {
+            background: #10b981;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 24px;
+            transition: all 0.3s;
+        }
+        .add-user-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e40af;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .form-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .form-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-save {
+            background: #10b981;
+            color: white;
+        }
+        .btn-save:hover {
+            background: #059669;
+        }
+        .btn-cancel {
+            background: #6b7280;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+    </style>
+    <link rel="stylesheet" href="/econtract/css/modern-responsive.css">
+</head>
+<body>
+    <div id="sidebar-container"></div>
+    
+    <div class="main-content">
+        <div class="breadcrumb">
+            <a href="../index.html">🏠 Dashboard</a> › 
+            <a href="users.html">Benutzerverwaltung</a>
+        </div>
+
+        <div class="page-header">
+            <h1>👥 Benutzerverwaltung</h1>
+            <p>Verwalten Sie Benutzer, Rollen und Berechtigungen</p>
+        </div>
+
+        <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 32px;">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="totalUsers">0</div>
+                <div class="stat-label">Gesamt Benutzer</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="activeUsers">0</div>
+                <div class="stat-label">Aktive Benutzer</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔒</div>
+                <div class="stat-value" id="adminUsers">0</div>
+                <div class="stat-label">Administratoren</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-value" id="newUsers">0</div>
+                <div class="stat-label">Neue (30 Tage)</div>
+            </div>
+        </div>
+
+        <button class="add-user-btn" onclick="openAddUserModal()">
+            ➕ Neuer Benutzer
+        </button>
+
+        <div class="user-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Benutzer</th>
+                        <th>E-Mail</th>
+                        <th>Rolle</th>
+                        <th>Status</th>
+                        <th>Letzte Anmeldung</th>
+                        <th>Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody id="userTableBody">
+                    <!-- Wird dynamisch gefüllt -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Add/Edit User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Neuer Benutzer</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="userName">Benutzername *</label>
+                    <input type="text" id="userName" required>
+                </div>
+                <div class="form-group">
+                    <label for="userEmail">E-Mail *</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="userFirstName">Vorname *</label>
+                    <input type="text" id="userFirstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="userLastName">Nachname *</label>
+                    <input type="text" id="userLastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Rolle *</label>
+                    <select id="userRole" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="ADMIN">Administrator</option>
+                        <option value="USER">Benutzer</option>
+                        <option value="VIEWER">Betrachter</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userPassword">Passwort *</label>
+                    <input type="password" id="userPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="userStatus">Status *</label>
+                    <select id="userStatus" required>
+                        <option value="ACTIVE">Aktiv</option>
+                        <option value="INACTIVE">Inaktiv</option>
+                    </select>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-save">💾 Speichern</button>
+                    <button type="button" class="btn-cancel" onclick="closeUserModal()">❌ Abbrechen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../js/navigation.js"></script>
+    <script>
+        // Demo-Daten
+        const demoUsers = [
+            { id: 1, username: 'max.mustermann', email: 'max.mustermann@example.com', firstName: 'Max', lastName: 'Mustermann', role: 'ADMIN', status: 'ACTIVE', lastLogin: '2025-10-28 09:30' },
+            { id: 2, username: 'anna.schmidt', email: 'anna.schmidt@example.com', firstName: 'Anna', lastName: 'Schmidt', role: 'USER', status: 'ACTIVE', lastLogin: '2025-10-28 08:15' },
+            { id: 3, username: 'peter.mueller', email: 'peter.mueller@example.com', firstName: 'Peter', lastName: 'Müller', role: 'USER', status: 'ACTIVE', lastLogin: '2025-10-27 16:45' },
+            { id: 4, username: 'lisa.weber', email: 'lisa.weber@example.com', firstName: 'Lisa', lastName: 'Weber', role: 'VIEWER', status: 'INACTIVE', lastLogin: '2025-10-20 11:20' }
+        ];
+
+        // Statistiken aktualisieren
+        function updateStats() {
+            document.getElementById('totalUsers').textContent = demoUsers.length;
+            document.getElementById('activeUsers').textContent = demoUsers.filter(u => u.status === 'ACTIVE').length;
+            document.getElementById('adminUsers').textContent = demoUsers.filter(u => u.role === 'ADMIN').length;
+            document.getElementById('newUsers').textContent = '2';
+        }
+
+        // Benutzertabelle rendern
+        function renderUserTable() {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = demoUsers.map(user => `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center;">
+                            <div class="user-avatar">${user.firstName.charAt(0)}${user.lastName.charAt(0)}</div>
+                            <div>
+                                <div style="font-weight: 600;">${user.firstName} ${user.lastName}</div>
+                                <div style="font-size: 14px; color: #6b7280;">@${user.username}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${user.email}</td>
+                    <td><span class="user-role">${user.role}</span></td>
+                    <td><span class="user-status status-${user.status.toLowerCase()}">${user.status === 'ACTIVE' ? 'Aktiv' : 'Inaktiv'}</span></td>
+                    <td>${user.lastLogin}</td>
+                    <td class="action-buttons">
+                        <button class="btn-edit" onclick="editUser(${user.id})">✏️ Bearbeiten</button>
+                        <button class="btn-reset" onclick="resetPassword(${user.id})">🔑 Passwort</button>
+                        <button class="btn-delete" onclick="deleteUser(${user.id})">🗑️ Löschen</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Modal-Funktionen
+        function openAddUserModal() {
+            document.getElementById('modalTitle').textContent = 'Neuer Benutzer';
+            document.getElementById('userForm').reset();
+            document.getElementById('userModal').classList.add('active');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('active');
+        }
+
+        function editUser(id) {
+            const user = demoUsers.find(u => u.id === id);
+            if (user) {
+                document.getElementById('modalTitle').textContent = 'Benutzer bearbeiten';
+                document.getElementById('userName').value = user.username;
+                document.getElementById('userEmail').value = user.email;
+                document.getElementById('userFirstName').value = user.firstName;
+                document.getElementById('userLastName').value = user.lastName;
+                document.getElementById('userRole').value = user.role;
+                document.getElementById('userStatus').value = user.status;
+                document.getElementById('userPassword').value = '********';
+                document.getElementById('userModal').classList.add('active');
+            }
+        }
+
+        function deleteUser(id) {
+            if (confirm('Möchten Sie diesen Benutzer wirklich löschen?')) {
+                alert('Benutzer wurde gelöscht (Demo)');
+            }
+        }
+
+        function resetPassword(id) {
+            if (confirm('Möchten Sie das Passwort für diesen Benutzer zurücksetzen?')) {
+                alert('Passwort wurde zurückgesetzt (Demo)');
+            }
+        }
+
+        // Form Submit
+        document.getElementById('userForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Benutzer wurde gespeichert (Demo)');
+            closeUserModal();
+        });
+
+        // Initialisierung
+        updateStats();
+        renderUserTable();
+    </script>
+</body>
+</html>
+
