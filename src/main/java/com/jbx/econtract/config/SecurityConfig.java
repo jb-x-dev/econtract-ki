@@ -26,8 +26,8 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/health", "/actuator/health").permitAll()
-                // All HTML pages require authentication
-                .requestMatchers("/**/*.html").authenticated()
+                // All HTML pages require authentication (except login.html already permitted above)
+                .requestMatchers("/*.html", "/reports/*.html").authenticated()
                 .requestMatchers("/api/**").authenticated()
                 // All other requests require authentication
                 .anyRequest().authenticated()
