@@ -115,8 +115,31 @@
         // Load Dashboard Data
         async function loadDashboardData() {
             try {
-                const response = await fetch('/econtract/api/v1/contracts?all=true');
+                console.log('Loading dashboard data...');
+                const response = await fetch('/econtract/api/v1/contracts?all=true', {
+                    credentials: 'include'
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers.get('content-type'));
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.error('Response is not JSON:', contentType);
+                    throw new Error('API did not return JSON');
+                }
+                
                 const contracts = await response.json();
+                console.log('Loaded contracts:', contracts.length);
+                
+                if (!Array.isArray(contracts)) {
+                    console.error('Contracts is not an array:', contracts);
+                    throw new Error('Invalid data format');
+                }
                 
                 // Update Stats
                 document.getElementById('totalContracts').textContent = contracts.length;
@@ -146,6 +169,7 @@
                 
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
+                console.error('Error details:', error.message, error.stack);
                 // Show sample data if API fails
                 loadSampleData();
             }
