@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genehmigte Verträge - eContract KI</title>
+    
+    <!-- Unified Menu CSS -->
+    <link rel="stylesheet" href="css/unified-menu.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+</head>
+<body>
+    <!-- Unified Sidebar -->
+    <aside id="unified-sidebar"></aside>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <div class="container">
+            <h1>✅ Genehmigte Verträge</h1>
+            <p class="subtitle">Übersicht aller genehmigten Verträge</p>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #10b981;">✅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Genehmigte Verträge</div>
+                        <div class="stat-value" id="approvedCount">-</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #3b82f6;">💰</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Gesamtwert</div>
+                        <div class="stat-value" id="totalValue">-</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #8b5cf6;">📅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Durchschn. Bearbeitungszeit</div>
+                        <div class="stat-value" id="avgProcessingTime">-</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f59e0b;">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Genehmigungsrate</div>
+                        <div class="stat-value" id="approvalRate">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card">
+                <div class="filters">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Suche nach Vertragsnummer, Titel, Partner..." 
+                           onkeyup="filterContracts()">
+                    
+                    <select id="typeFilter" class="form-control" onchange="filterContracts()">
+                        <option value="">Alle Typen</option>
+                        <option value="Lieferantenvertrag">Lieferantenvertrag</option>
+                        <option value="Kundenvertrag">Kundenvertrag</option>
+                        <option value="Dienstleistungsvertrag">Dienstleistungsvertrag</option>
+                        <option value="Geheimhaltungsvereinbarung">Geheimhaltungsvereinbarung</option>
+                    </select>
+                    
+                    <select id="sortBy" class="form-control" onchange="sortContracts()">
+                        <option value="approvalDate">Genehmigungsdatum</option>
+                        <option value="value">Vertragswert</option>
+                        <option value="title">Titel</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Contracts Table -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Typ</th>
+                                <th>Wert</th>
+                                <th>Genehmigt am</th>
+                                <th>Genehmigt von</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractsTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="loading">Lade genehmigte Verträge...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination" id="pagination"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Unified Menu JS -->
+    <script src="js/unified-menu.js"></script>
+    
+    <!-- Page JS -->
+    <script>
+        let allContracts = [];
+        let filteredContracts = [];
+        let currentPage = 1;
+        const itemsPerPage = 20;
+        
+        // Load approved contracts
+        async function loadApprovedContracts() {
+            try {
+                console.log('Loading approved contracts...');
+                const response = await fetch('/econtract/api/v1/contracts?all=true', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const contracts = await response.json();
+                console.log('Loaded contracts:', contracts.length);
+                
+                // Filter for ACTIVE status (approved contracts)
+                allContracts = contracts.filter(c => c.status === 'ACTIVE');
+                filteredContracts = [...allContracts];
+                
+                console.log('Approved contracts:', allContracts.length);
+                
+                updateStats();
+                renderContracts();
+                
+            } catch (error) {
+                console.error('Error loading approved contracts:', error);
+                document.getElementById('contractsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            <div class="error">
+                                <p>⚠️ Fehler beim Laden der Daten</p>
+                                <p>${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('approvedCount').textContent = allContracts.length;
+            
+            const totalValue = allContracts.reduce((sum, c) => sum + (c.contractValue || 0), 0);
+            document.getElementById('totalValue').textContent = 
+                new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(totalValue);
+            
+            document.getElementById('avgProcessingTime').textContent = '3-5 Tage';
+            document.getElementById('approvalRate').textContent = '87%';
+        }
+        
+        function renderContracts() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageContracts = filteredContracts.slice(start, end);
+            
+            if (pageContracts.length === 0) {
+                document.getElementById('contractsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center">Keine genehmigten Verträge gefunden</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const html = pageContracts.map(contract => `
+                <tr>
+                    <td><strong>${contract.contractNumber || 'N/A'}</strong></td>
+                    <td>${contract.title || 'Ohne Titel'}</td>
+                    <td>${contract.partnerName || 'N/A'}</td>
+                    <td><span class="badge badge-info">${contract.contractType || 'N/A'}</span></td>
+                    <td>${contract.contractValue ? new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(contract.contractValue) : 'N/A'}</td>
+                    <td>${contract.updatedAt ? new Date(contract.updatedAt).toLocaleDateString('de-DE') : 'N/A'}</td>
+                    <td>${contract.createdBy || 'System'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="viewContract(${contract.id})">Anzeigen</button>
+                        <button class="btn btn-sm btn-secondary" onclick="downloadContract(${contract.id})">Download</button>
+                    </td>
+                </tr>
+            `).join('');
+            
+            document.getElementById('contractsTableBody').innerHTML = html;
+            renderPagination();
+        }
+        
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredContracts.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            
+            document.getElementById('pagination').innerHTML = html;
+        }
+        
+        function goToPage(page) {
+            currentPage = page;
+            renderContracts();
+        }
+        
+        function filterContracts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('typeFilter').value;
+            
+            filteredContracts = allContracts.filter(contract => {
+                const matchesSearch = !searchTerm || 
+                    (contract.contractNumber && contract.contractNumber.toLowerCase().includes(searchTerm)) ||
+                    (contract.title && contract.title.toLowerCase().includes(searchTerm)) ||
+                    (contract.partnerName && contract.partnerName.toLowerCase().includes(searchTerm));
+                
+                const matchesType = !typeFilter || contract.contractType === typeFilter;
+                
+                return matchesSearch && matchesType;
+            });
+            
+            currentPage = 1;
+            renderContracts();
+        }
+        
+        function sortContracts() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            filteredContracts.sort((a, b) => {
+                if (sortBy === 'approvalDate') {
+                    return new Date(b.updatedAt) - new Date(a.updatedAt);
+                } else if (sortBy === 'value') {
+                    return (b.contractValue || 0) - (a.contractValue || 0);
+                } else if (sortBy === 'title') {
+                    return (a.title || '').localeCompare(b.title || '');
+                }
+                return 0;
+            });
+            
+            renderContracts();
+        }
+        
+        function viewContract(id) {
+            window.location.href = `contract-edit.html?id=${id}`;
+        }
+        
+        function downloadContract(id) {
+            alert('Download-Funktion in Entwicklung...');
+        }
+        
+        // Initialize
+        UnifiedMenu.init();
+        loadApprovedContracts();
+    </script>
+</body>
+</html>

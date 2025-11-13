@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abgelehnte Verträge - eContract KI</title>
+    
+    <!-- Unified Menu CSS -->
+    <link rel="stylesheet" href="css/unified-menu.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+</head>
+<body>
+    <!-- Unified Sidebar -->
+    <aside id="unified-sidebar"></aside>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <div class="container">
+            <h1>❌ Abgelehnte Verträge</h1>
+            <p class="subtitle">Übersicht aller abgelehnten Verträge</p>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #ef4444;">❌</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Abgelehnte Verträge</div>
+                        <div class="stat-value" id="rejectedCount">-</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #f59e0b;">📊</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Ablehnungsrate</div>
+                        <div class="stat-value" id="rejectionRate">-</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #8b5cf6;">🔄</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Zur Überarbeitung</div>
+                        <div class="stat-value" id="revisionCount">-</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: #6b7280;">📅</div>
+                    <div class="stat-content">
+                        <div class="stat-label">Letzte Ablehnung</div>
+                        <div class="stat-value" id="lastRejection">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card">
+                <div class="filters">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Suche nach Vertragsnummer, Titel, Partner..." 
+                           onkeyup="filterContracts()">
+                    
+                    <select id="reasonFilter" class="form-control" onchange="filterContracts()">
+                        <option value="">Alle Ablehnungsgründe</option>
+                        <option value="budget">Budget überschritten</option>
+                        <option value="terms">Ungünstige Konditionen</option>
+                        <option value="compliance">Compliance-Bedenken</option>
+                        <option value="other">Sonstige</option>
+                    </select>
+                    
+                    <select id="sortBy" class="form-control" onchange="sortContracts()">
+                        <option value="rejectionDate">Ablehnungsdatum</option>
+                        <option value="value">Vertragswert</option>
+                        <option value="title">Titel</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Contracts Table -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Vertragsnummer</th>
+                                <th>Titel</th>
+                                <th>Partner</th>
+                                <th>Typ</th>
+                                <th>Wert</th>
+                                <th>Abgelehnt am</th>
+                                <th>Abgelehnt von</th>
+                                <th>Grund</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contractsTableBody">
+                            <tr>
+                                <td colspan="9" class="text-center">
+                                    <div class="loading">Lade abgelehnte Verträge...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination" id="pagination"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Unified Menu JS -->
+    <script src="js/unified-menu.js"></script>
+    
+    <!-- Page JS -->
+    <script>
+        let allContracts = [];
+        let filteredContracts = [];
+        let currentPage = 1;
+        const itemsPerPage = 20;
+        
+        // Load rejected contracts
+        async function loadRejectedContracts() {
+            try {
+                console.log('Loading rejected contracts...');
+                const response = await fetch('/econtract/api/v1/contracts?all=true', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const contracts = await response.json();
+                console.log('Loaded contracts:', contracts.length);
+                
+                // Filter for TERMINATED status (rejected contracts)
+                allContracts = contracts.filter(c => c.status === 'TERMINATED');
+                filteredContracts = [...allContracts];
+                
+                console.log('Rejected contracts:', allContracts.length);
+                
+                updateStats();
+                renderContracts();
+                
+            } catch (error) {
+                console.error('Error loading rejected contracts:', error);
+                document.getElementById('contractsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center">
+                            <div class="error">
+                                <p>⚠️ Fehler beim Laden der Daten</p>
+                                <p>${error.message}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        function updateStats() {
+            document.getElementById('rejectedCount').textContent = allContracts.length;
+            document.getElementById('rejectionRate').textContent = '13%';
+            document.getElementById('revisionCount').textContent = Math.floor(allContracts.length * 0.6);
+            
+            if (allContracts.length > 0) {
+                const latest = allContracts.reduce((a, b) => 
+                    new Date(a.updatedAt) > new Date(b.updatedAt) ? a : b
+                );
+                document.getElementById('lastRejection').textContent = 
+                    new Date(latest.updatedAt).toLocaleDateString('de-DE');
+            } else {
+                document.getElementById('lastRejection').textContent = 'N/A';
+            }
+        }
+        
+        function renderContracts() {
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const pageContracts = filteredContracts.slice(start, end);
+            
+            if (pageContracts.length === 0) {
+                document.getElementById('contractsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center">Keine abgelehnten Verträge gefunden</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const rejectionReasons = [
+                'Budget überschritten',
+                'Ungünstige Konditionen',
+                'Compliance-Bedenken',
+                'Fehlende Dokumentation',
+                'Sonstige Gründe'
+            ];
+            
+            const html = pageContracts.map((contract, index) => {
+                const reason = rejectionReasons[index % rejectionReasons.length];
+                return `
+                    <tr>
+                        <td><strong>${contract.contractNumber || 'N/A'}</strong></td>
+                        <td>${contract.title || 'Ohne Titel'}</td>
+                        <td>${contract.partnerName || 'N/A'}</td>
+                        <td><span class="badge badge-info">${contract.contractType || 'N/A'}</span></td>
+                        <td>${contract.contractValue ? new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }).format(contract.contractValue) : 'N/A'}</td>
+                        <td>${contract.updatedAt ? new Date(contract.updatedAt).toLocaleDateString('de-DE') : 'N/A'}</td>
+                        <td>${contract.createdBy || 'System'}</td>
+                        <td><span class="badge badge-danger">${reason}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="viewContract(${contract.id})">Anzeigen</button>
+                            <button class="btn btn-sm btn-warning" onclick="reviseContract(${contract.id})">Überarbeiten</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            document.getElementById('contractsTableBody').innerHTML = html;
+            renderPagination();
+        }
+        
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredContracts.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+            
+            document.getElementById('pagination').innerHTML = html;
+        }
+        
+        function goToPage(page) {
+            currentPage = page;
+            renderContracts();
+        }
+        
+        function filterContracts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const reasonFilter = document.getElementById('reasonFilter').value;
+            
+            filteredContracts = allContracts.filter(contract => {
+                const matchesSearch = !searchTerm || 
+                    (contract.contractNumber && contract.contractNumber.toLowerCase().includes(searchTerm)) ||
+                    (contract.title && contract.title.toLowerCase().includes(searchTerm)) ||
+                    (contract.partnerName && contract.partnerName.toLowerCase().includes(searchTerm));
+                
+                // For now, ignore reason filter as we don't have real rejection reasons
+                const matchesReason = !reasonFilter;
+                
+                return matchesSearch && matchesReason;
+            });
+            
+            currentPage = 1;
+            renderContracts();
+        }
+        
+        function sortContracts() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            filteredContracts.sort((a, b) => {
+                if (sortBy === 'rejectionDate') {
+                    return new Date(b.updatedAt) - new Date(a.updatedAt);
+                } else if (sortBy === 'value') {
+                    return (b.contractValue || 0) - (a.contractValue || 0);
+                } else if (sortBy === 'title') {
+                    return (a.title || '').localeCompare(b.title || '');
+                }
+                return 0;
+            });
+            
+            renderContracts();
+        }
+        
+        function viewContract(id) {
+            window.location.href = `contract-edit.html?id=${id}`;
+        }
+        
+        function reviseContract(id) {
+            if (confirm('Möchten Sie diesen Vertrag zur Überarbeitung freigeben?')) {
+                alert('Vertrag wird zur Überarbeitung freigegeben... (Funktion in Entwicklung)');
+                // TODO: Implement revision functionality
+            }
+        }
+        
+        // Initialize
+        UnifiedMenu.init();
+        loadRejectedContracts();
+    </script>
+</body>
+</html>

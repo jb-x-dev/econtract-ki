@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KI-Vertragserstellung - eContract KI</title>
+    
+    <!-- Unified Menu CSS -->
+    <link rel="stylesheet" href="css/unified-menu.css">
+    <link rel="stylesheet" href="css/minimal-theme.css">
+</head>
+<body>
+    <!-- Unified Sidebar -->
+    <aside id="unified-sidebar"></aside>
+
+    <!-- Main Content -->
+    <div id="main-content">
+        <div class="container">
+            <h1>✨ KI-Vertragserstellung</h1>
+            <p class="subtitle">Erstellen Sie Verträge mit KI-Unterstützung</p>
+
+            <!-- Wizard Steps -->
+            <div class="card">
+                <div class="wizard-steps">
+                    <div class="wizard-step active">
+                        <div class="step-number">1</div>
+                        <div class="step-title">Vertragstyp</div>
+                    </div>
+                    <div class="wizard-step">
+                        <div class="step-number">2</div>
+                        <div class="step-title">Details</div>
+                    </div>
+                    <div class="wizard-step">
+                        <div class="step-number">3</div>
+                        <div class="step-title">KI-Generierung</div>
+                    </div>
+                    <div class="wizard-step">
+                        <div class="step-number">4</div>
+                        <div class="step-title">Überprüfung</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Contract Type Selection -->
+            <div class="card" id="step1">
+                <h2>Schritt 1: Vertragstyp wählen</h2>
+                
+                <div class="contract-type-grid">
+                    <div class="contract-type-card" onclick="selectContractType('Lieferantenvertrag')">
+                        <div class="type-icon">📦</div>
+                        <h3>Lieferantenvertrag</h3>
+                        <p>Verträge mit Lieferanten und Dienstleistern</p>
+                    </div>
+                    
+                    <div class="contract-type-card" onclick="selectContractType('Kundenvertrag')">
+                        <div class="type-icon">🤝</div>
+                        <h3>Kundenvertrag</h3>
+                        <p>Verträge mit Kunden und Partnern</p>
+                    </div>
+                    
+                    <div class="contract-type-card" onclick="selectContractType('Dienstleistungsvertrag')">
+                        <div class="type-icon">⚙️</div>
+                        <h3>Dienstleistungsvertrag</h3>
+                        <p>Service-Level-Agreements und Dienstleistungen</p>
+                    </div>
+                    
+                    <div class="contract-type-card" onclick="selectContractType('Geheimhaltungsvereinbarung')">
+                        <div class="type-icon">🔒</div>
+                        <h3>Geheimhaltungsvereinbarung</h3>
+                        <p>NDA und Vertraulichkeitsvereinbarungen</p>
+                    </div>
+                    
+                    <div class="contract-type-card" onclick="selectContractType('Arbeitsvertrag')">
+                        <div class="type-icon">👥</div>
+                        <h3>Arbeitsvertrag</h3>
+                        <p>Arbeitsverträge und Anstellungsvereinbarungen</p>
+                    </div>
+                    
+                    <div class="contract-type-card" onclick="selectContractType('Mietvertrag')">
+                        <div class="type-icon">🏢</div>
+                        <h3>Mietvertrag</h3>
+                        <p>Miet- und Pachtverträge</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Details (hidden initially) -->
+            <div class="card" id="step2" style="display: none;">
+                <h2>Schritt 2: Vertragsdetails</h2>
+                
+                <form id="contractDetailsForm">
+                    <div class="form-group">
+                        <label for="contractTitle">Vertragstitel *</label>
+                        <input type="text" id="contractTitle" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="partnerName">Vertragspartner *</label>
+                            <input type="text" id="partnerName" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contractValue">Vertragswert (€)</label>
+                            <input type="number" id="contractValue" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Startdatum *</label>
+                            <input type="date" id="startDate" class="form-control" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="endDate">Enddatum</label>
+                            <input type="date" id="endDate" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="additionalInfo">Zusätzliche Informationen</label>
+                        <textarea id="additionalInfo" class="form-control" rows="4" 
+                                  placeholder="Beschreiben Sie besondere Anforderungen oder Klauseln..."></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="goToStep(1)">Zurück</button>
+                        <button type="button" class="btn btn-primary" onclick="generateContract()">KI-Vertrag generieren</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Step 3: AI Generation (hidden initially) -->
+            <div class="card" id="step3" style="display: none;">
+                <h2>Schritt 3: KI generiert Vertrag...</h2>
+                
+                <div class="ai-generation-status">
+                    <div class="loading-spinner"></div>
+                    <p>Die KI analysiert Ihre Eingaben und erstellt einen maßgeschneiderten Vertrag...</p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">0%</p>
+                </div>
+            </div>
+
+            <!-- Step 4: Review (hidden initially) -->
+            <div class="card" id="step4" style="display: none;">
+                <h2>Schritt 4: Vertrag überprüfen</h2>
+                
+                <div class="contract-preview">
+                    <div class="preview-header">
+                        <h3 id="previewTitle">Vertragstitel</h3>
+                        <div class="preview-meta">
+                            <span id="previewType">Vertragstyp</span>
+                            <span id="previewDate">Datum</span>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-content" id="previewContent">
+                        <!-- Generated contract content will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="goToStep(2)">Bearbeiten</button>
+                    <button type="button" class="btn btn-success" onclick="saveContract()">Vertrag speichern</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Unified Menu JS -->
+    <script src="js/unified-menu.js"></script>
+    
+    <!-- Page JS -->
+    <script>
+        let selectedType = '';
+        let currentStep = 1;
+        
+        function selectContractType(type) {
+            selectedType = type;
+            goToStep(2);
+        }
+        
+        function goToStep(step) {
+            // Hide all steps
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`step${i}`).style.display = 'none';
+            }
+            
+            // Show selected step
+            document.getElementById(`step${step}`).style.display = 'block';
+            currentStep = step;
+            
+            // Update wizard steps
+            updateWizardSteps(step);
+        }
+        
+        function updateWizardSteps(activeStep) {
+            const steps = document.querySelectorAll('.wizard-step');
+            steps.forEach((step, index) => {
+                if (index + 1 < activeStep) {
+                    step.classList.add('completed');
+                    step.classList.remove('active');
+                } else if (index + 1 === activeStep) {
+                    step.classList.add('active');
+                    step.classList.remove('completed');
+                } else {
+                    step.classList.remove('active', 'completed');
+                }
+            });
+        }
+        
+        function generateContract() {
+            // Validate form
+            const form = document.getElementById('contractDetailsForm');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Go to generation step
+            goToStep(3);
+            
+            // Simulate AI generation
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressText').textContent = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        showGeneratedContract();
+                    }, 500);
+                }
+            }, 300);
+        }
+        
+        function showGeneratedContract() {
+            const title = document.getElementById('contractTitle').value;
+            const partner = document.getElementById('partnerName').value;
+            const value = document.getElementById('contractValue').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            // Set preview header
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewType').textContent = selectedType;
+            document.getElementById('previewDate').textContent = new Date().toLocaleDateString('de-DE');
+            
+            // Generate contract content
+            const content = `
+                <h4>Vertragsparteien</h4>
+                <p><strong>Auftragnehmer:</strong> ${partner}</p>
+                <p><strong>Auftraggeber:</strong> [Ihr Unternehmen]</p>
+                
+                <h4>§1 Vertragsgegenstand</h4>
+                <p>Dieser ${selectedType} regelt die Zusammenarbeit zwischen den Vertragsparteien...</p>
+                
+                <h4>§2 Vertragslaufzeit</h4>
+                <p>Der Vertrag beginnt am ${new Date(startDate).toLocaleDateString('de-DE')} ${endDate ? 'und endet am ' + new Date(endDate).toLocaleDateString('de-DE') : 'und läuft auf unbestimmte Zeit'}.</p>
+                
+                ${value ? `<h4>§3 Vergütung</h4>
+                <p>Die vereinbarte Vergütung beträgt ${new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value)}.</p>` : ''}
+                
+                <h4>§4 Pflichten der Vertragsparteien</h4>
+                <p>Die Vertragsparteien verpflichten sich zur ordnungsgemäßen Erfüllung ihrer vertraglichen Pflichten...</p>
+                
+                <h4>§5 Kündigung</h4>
+                <p>Der Vertrag kann von beiden Parteien mit einer Frist von 3 Monaten zum Monatsende gekündigt werden.</p>
+                
+                <h4>§6 Schlussbestimmungen</h4>
+                <p>Änderungen und Ergänzungen dieses Vertrages bedürfen der Schriftform. Es gilt das Recht der Bundesrepublik Deutschland.</p>
+                
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <p>_______________________</p>
+                        <p>Ort, Datum</p>
+                    </div>
+                    <div class="signature-box">
+                        <p>_______________________</p>
+                        <p>Unterschrift ${partner}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('previewContent').innerHTML = content;
+            goToStep(4);
+        }
+        
+        function saveContract() {
+            alert('Vertrag wird gespeichert... (Funktion in Entwicklung)');
+            // TODO: Implement save functionality
+            // window.location.href = 'contracts.html';
+        }
+        
+        // Initialize
+        UnifiedMenu.init();
+    </script>
+    
+    <style>
+        .wizard-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        
+        .wizard-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        
+        .wizard-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            z-index: -1;
+        }
+        
+        .wizard-step.active .step-number {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .wizard-step.completed .step-number {
+            background: #10b981;
+            color: white;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contract-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .contract-type-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .contract-type-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .type-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .ai-generation-status {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 0.3s;
+            width: 0%;
+        }
+        
+        .contract-preview {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 2rem;
+            background: white;
+        }
+        
+        .preview-header {
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .preview-meta {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            color: #6b7280;
+        }
+        
+        .signature-section {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .signature-box {
+            text-align: center;
+        }
+    </style>
+</body>
+</html>
