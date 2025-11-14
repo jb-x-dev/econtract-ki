@@ -25,16 +25,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable()) // Für API-Zugriff
             .authorizeHttpRequests(auth -> auth
-                // Public resources
-                .requestMatchers("/login.html").permitAll()
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**").permitAll()
-                .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/health", "/actuator/health").permitAll()
-                // All HTML pages require authentication (except login.html already permitted above)
-                .requestMatchers("/*.html", "/reports/*.html").authenticated()
-                .requestMatchers("/api/**").authenticated()
-                // All other requests require authentication
-                .anyRequest().authenticated()
+                // TEMPORARILY DISABLE ALL AUTHENTICATION - ALLOW ALL REQUESTS
+                .anyRequest().permitAll()
             )
             .formLogin(form -> form
                 .loginPage("/login.html")
