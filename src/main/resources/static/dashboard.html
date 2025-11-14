@@ -133,7 +133,7 @@
                     throw new Error('API did not return JSON');
                 }
                 
-                const contracts = await response.json();
+                     const contracts = await response.json();
                 console.log('Loaded contracts:', contracts.length);
                 
                 if (!Array.isArray(contracts)) {
@@ -141,31 +141,58 @@
                     throw new Error('Invalid data format');
                 }
                 
-                // Update Stats
-                document.getElementById('totalContracts').textContent = contracts.length;
-                document.getElementById('activeContracts').textContent = 
-                    contracts.filter(c => c.status === 'ACTIVE').length;
-                document.getElementById('pendingContracts').textContent = 
-                    contracts.filter(c => c.status === 'IN_APPROVAL').length;
+                // Update Stats (wrapped in setTimeout to avoid extension interference)
+                setTimeout(() => {
+                    try {
+                        document.getElementById('totalContracts').textContent = contracts.length;
+                        document.getElementById('activeContracts').textContent = 
+                            contracts.filter(c => c.status === 'ACTIVE').length;
+                        document.getElementById('pendingContracts').textContent = 
+                            contracts.filter(c => c.status === 'IN_APPROVAL').length;
+                        const totalValue = contracts.reduce((sum, c) => 
+                            sum + (c.contractValue || 0), 0);
+                        document.getElementById('totalValue').textContent = 
+                            new Intl.NumberFormat('de-DE', { 
+                                style: 'currency', 
+                                currency: 'EUR',
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0
+                            }).format(totalValue);
+                        
+                        console.log('Stats updated successfully');
+                    } catch (err) {
+                        console.error('Error updating stats:', err);
+                    }
+                }, 0);
                 
-                const totalValue = contracts.reduce((sum, c) => 
-                    sum + (c.contractValue || 0), 0);
-                document.getElementById('totalValue').textContent = 
-                    new Intl.NumberFormat('de-DE', { 
-                        style: 'currency', 
-                        currency: 'EUR',
-                        minimumFractionDigits: 0,
-                        maximumFractionDigits: 0
-                    }).format(totalValue);
+                // Create Charts (wrapped in setTimeout)
+                setTimeout(() => {
+                    try {
+                        createStatusChart(contracts);
+                        console.log('Status chart created');
+                    } catch (err) {
+                        console.error('Error creating status chart:', err);
+                    }
+                }, 100);
                 
-                // Create Status Chart
-                createStatusChart(contracts);
+                setTimeout(() => {
+                    try {
+                        createTypeChart(contracts);
+                        console.log('Type chart created');
+                    } catch (err) {
+                        console.error('Error creating type chart:', err);
+                    }
+                }, 200);
                 
-                // Create Type Chart
-                createTypeChart(contracts);
-                
-                // Load Recent Contracts
-                loadRecentContracts(contracts);
+                // Load Recent Contracts (wrapped in setTimeout)
+                setTimeout(() => {
+                    try {
+                        loadRecentContracts(contracts);
+                        console.log('Recent contracts loaded');
+                    } catch (err) {
+                        console.error('Error loading recent contracts:', err);
+                    }
+                }, 300);(contracts);
                 
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
