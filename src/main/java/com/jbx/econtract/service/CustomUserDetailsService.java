@@ -17,7 +17,7 @@ import java.util.Collections;
 /**
  * Custom UserDetailsService für Spring Security
  */
-@Service
+// @Service // Temporarily disabled - using InMemoryUserDetailsManager instead
 @RequiredArgsConstructor
 @Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
